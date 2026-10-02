@@ -4,51 +4,47 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>SplitSignal</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif&family=Schibsted+Grotesk:wght@500;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap" rel="stylesheet" />
 <style>
-  :root { --bg:#090b10; --card:#121722; --line:rgba(255,255,255,.08); --muted:#8d97a8; --ink:#f4f6f8; --hot:#ff4d1c; }
+  :root { --bg:#f3efe6; --ink:#1b1914; --muted:#6f6a60; --line:#e2d9cc; --hot:#d84a1b; --card:#fffdf8; }
   * { box-sizing:border-box; }
-  body { margin:0; background:radial-gradient(900px 420px at 80% -10%, rgba(255,77,28,.16), transparent 60%), var(--bg); color:var(--ink); font-family:"Schibsted Grotesk",sans-serif; }
-  main { max-width:1120px; margin:0 auto; padding:28px 22px 80px; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:"Newsreader",serif; }
+  main { max-width:1080px; margin:0 auto; padding:28px 22px 80px; }
   nav, .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
   nav { justify-content:space-between; }
-  a, .mono { color:var(--muted); font-family:"IBM Plex Mono",monospace; font-size:12px; text-decoration:none; }
-  .chip { border:1px solid var(--line); border-radius:999px; padding:8px 12px; background:rgba(255,255,255,.03); }
-  h1 { font-family:"Instrument Serif",serif; font-size:84px; font-weight:400; line-height:.86; margin:34px 0 12px; letter-spacing:-.03em; }
-  h1 em { font-style:italic; color:var(--hot); }
-  .lead { max-width:640px; color:#c5ccd6; font-size:18px; line-height:1.45; }
-  .strip { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:18px; overflow:hidden; margin:28px 0; }
-  .strip div { background:#10151e; padding:16px 18px; }
-  .strip b { display:block; font-size:32px; margin-top:4px; }
-  .desk { display:grid; grid-template-columns:.9fr 1.1fr; gap:16px; }
-  section { background:rgba(18,23,34,.92); border:1px solid var(--line); border-radius:24px; padding:20px; }
-  label { display:block; margin:14px 0 6px; color:var(--muted); font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.12em; }
-  input { width:100%; border:1px solid var(--line); background:#090b10; color:white; border-radius:14px; padding:13px 14px; font:inherit; }
-  button { font:inherit; border:0; border-radius:999px; padding:11px 16px; cursor:pointer; }
-  .hot { background:var(--hot); color:white; } .blue { background:#dfe7f2; color:#111; } .ghost { background:transparent; color:white; border:1px solid var(--line); }
-  .head { display:flex; justify-content:space-between; align-items:end; }
-  .pill { font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.08em; }
-  .pair { display:grid; grid-template-columns:1fr 72px 1fr; gap:8px; margin:18px 0; }
-  .src { background:#090b10; border-radius:18px; padding:16px; min-height:120px; }
-  .src b { display:block; font-size:40px; margin:8px 0; }
-  .mark { display:grid; place-items:center; color:var(--hot); font-size:28px; }
-  pre { margin-top:18px; white-space:pre-wrap; font-family:"IBM Plex Mono",monospace; font-size:12px; color:#d5dbe3; }
-  @media (max-width:860px) { h1 { font-size:52px; } .desk, .strip, .pair { grid-template-columns:1fr; } .mark { display:none; } }
+  .mono, a { font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--muted); text-decoration:none; }
+  h1 { font-size:76px; line-height:.88; font-weight:500; margin:36px 0 12px; letter-spacing:-.035em; }
+  h1 i { color:var(--hot); font-style:italic; }
+  .lead { max-width:560px; font-size:22px; line-height:1.35; margin:0 0 28px; }
+  .nums { display:grid; grid-template-columns:repeat(3,1fr); border-top:1px solid var(--ink); border-bottom:1px solid var(--ink); }
+  .nums div { padding:16px 0; }
+  .nums b { display:block; font-size:34px; margin-top:4px; }
+  .desk { display:grid; grid-template-columns:1fr 1fr; gap:42px; margin-top:28px; }
+  label { display:block; margin:16px 0 6px; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.12em; color:var(--muted); }
+  input { width:100%; border:0; border-bottom:1px solid var(--line); background:transparent; color:var(--ink); padding:10px 0; font:18px "Newsreader",serif; }
+  button { font-family:"IBM Plex Mono",monospace; font-size:12px; border:1px solid var(--ink); background:transparent; border-radius:999px; padding:10px 14px; cursor:pointer; }
+  .hot { background:var(--hot); color:white; border-color:var(--hot); }
+  .fill { background:var(--ink); color:var(--bg); }
+  .split { display:grid; grid-template-columns:1fr auto 1fr; gap:12px; align-items:end; margin:22px 0; }
+  .src b { display:block; font-size:48px; line-height:1; margin:8px 0; }
+  .eq { font-size:28px; color:var(--hot); }
+  pre { margin-top:28px; white-space:pre-wrap; font-family:"IBM Plex Mono",monospace; font-size:12px; color:#3d3a34; }
+  @media (max-width:800px) { h1 { font-size:48px; } .desk, .nums, .split { grid-template-columns:1fr; } .eq { display:none; } }
 </style>
 </head>
 <body>
 <main>
   <nav>
-    <b>SPLITSIGNAL</b>
+    <b>SplitSignal</b>
     <div class="row">
-      <span class="chip mono">STUDIONET</span>
-      <a class="chip" href="https://studio.genlayer.com/?import-contract=0x07aeE113dD0248DB23BC0259ba1197D0cFC9e15b">0x07ae…e15b</a>
-      <button id="connect" class="blue">Connect</button>
+      <span class="mono">Studionet</span>
+      <a href="https://studio.genlayer.com/?import-contract=0x07aeE113dD0248DB23BC0259ba1197D0cFC9e15b">0x07ae…e15b</a>
+      <button id="connect" class="fill">Connect</button>
     </div>
   </nav>
-  <h1>Two pages.<br><em>One window.</em></h1>
-  <p class="lead">Lock GEN only while two public pages agree. The account that catches the split is paid. Five percent stays with the pool. An open bond comes home after the window.</p>
-  <div class="strip">
+  <h1>Two pages.<br><i>One window.</i></h1>
+  <p class="lead">Money sits in the pool. A window locks only when both pages agree. The account that catches the split is paid.</p>
+  <div class="nums">
     <div><span class="mono">POOL</span><b id="poolVal">—</b></div>
     <div><span class="mono">RESERVED</span><b id="reservedVal">—</b></div>
     <div><span class="mono">FREE</span><b id="freeVal">—</b></div>
@@ -56,26 +52,28 @@
   <div class="desk">
     <section>
       <label>DEPOSIT GEN</label><input id="dep" value="1" />
-      <div class="row"><button class="blue" id="deposit">Deposit</button><button class="ghost" id="withdraw">Withdraw</button><button class="ghost" id="refresh">Refresh</button></div>
+      <div class="row" style="margin-top:14px"><button id="deposit" class="fill">Deposit</button><button id="withdraw">Withdraw</button><button id="refresh">Refresh</button></div>
       <label>LEFT</label><input id="left" value="https://example.org" />
       <label>RIGHT</label><input id="right" value="https://www.iana.org" />
       <label>FIELD</label><input id="field" value="iana" />
       <div class="row">
-        <div style="flex:1"><label>BOND GEN</label><input id="bond" value="1" /></div>
+        <div style="flex:1"><label>BOND</label><input id="bond" value="1" /></div>
         <div style="flex:1"><label>HOURS</label><input id="hours" value="24" /></div>
       </div>
-      <div class="row" style="margin-top:16px"><button class="hot" id="openWatch">Lock window</button></div>
+      <div class="row" style="margin-top:18px"><button id="openWatch" class="hot">Lock window</button></div>
     </section>
     <section>
-      <div class="head"><div><span class="mono">WATCH</span><h2 id="title" style="margin:4px 0">Nothing open</h2></div><span class="pill" id="pill">—</span></div>
-      <label>WATCH ID</label><input id="id" placeholder="1" />
-      <div class="pair">
+      <span class="mono">WATCH</span>
+      <h2 id="title" style="font-size:42px;margin:6px 0">Nothing open</h2>
+      <span class="mono" id="pill">—</span>
+      <label>WATCH ID</label><input id="id" value="1" />
+      <div class="split">
         <div class="src"><span class="mono">LEFT</span><b id="leftVal">—</b><span class="mono" id="leftUrl"></span></div>
-        <div class="mark" id="mark">=</div>
+        <div class="eq" id="mark">=</div>
         <div class="src"><span class="mono">RIGHT</span><b id="rightVal">—</b><span class="mono" id="rightUrl"></span></div>
       </div>
-      <p class="mono" id="meta">Frozen values appear after a read.</p>
-      <div class="row"><button class="blue" id="read">Read</button><button class="hot" id="recheck">Recheck</button><button class="ghost" id="refund">Refund</button></div>
+      <p class="mono" id="meta">Read a watch after it finalizes.</p>
+      <div class="row"><button id="read" class="fill">Read</button><button id="recheck" class="hot">Recheck</button><button id="refund">Refund</button></div>
     </section>
   </div>
   <pre id="out">Connect a Studionet wallet.</pre>
