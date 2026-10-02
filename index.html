@@ -99,9 +99,7 @@ async function write(functionName, args, value = 0n) {
   if (!account) throw new Error("Connect first.");
   const c = createClient({ chain: studionet, account, provider });
   await c.connect("studionet");
-  const call = { address: CONTRACT, functionName, args, value };
-  const estimate = await c.estimateTransactionFeesForWrite(call);
-  return c.writeContract({ ...call, fees: { distribution: estimate.distribution, feeValue: estimate.feeValue } });
+  return c.writeContract({ address: CONTRACT, functionName, args, value });
 }
 async function pool() {
   const raw = await readClient().readContract({ address: CONTRACT, functionName: "get_pool", args: [], stateStatus: "accepted" });
