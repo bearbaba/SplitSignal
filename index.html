@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SplitSignal</title>
+<style>
+  body { margin: 0; background: #f4f1ea; color: #1b1914; font-family: Georgia, serif; }
+  main { max-width: 720px; margin: 0 auto; padding: 48px 20px 80px; }
+  h1 { font-weight: 500; font-size: 40px; margin: 0 0 8px; }
+  p { line-height: 1.5; }
+  .muted { color: #6e675e; }
+  a { color: #8d4e12; }
+  section { background: #fff; border: 1px solid #e5ddd2; border-radius: 18px; padding: 18px; margin: 16px 0; }
+  label { display: block; font-size: 13px; margin: 12px 0 6px; }
+  input { width: 100%; box-sizing: border-box; border: 1px solid #d9d0c4; border-radius: 8px; padding: 10px 12px; font: inherit; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  button { font: inherit; border: 0; border-radius: 999px; padding: 8px 14px; background: #1b1914; color: #f4f1ea; cursor: pointer; }
+  button.ghost { background: transparent; color: #1b1914; border: 1px solid #d9d0c4; }
+  pre { white-space: pre-wrap; background: #f4f1ea; border-radius: 10px; padding: 12px; font-family: ui-monospace, monospace; font-size: 12px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>SplitSignal</h1>
+  <p class="muted">Two public pages. One field. The bond pays the account that catches them diverging.</p>
+  <p>Contract <a href="https://explorer-studio.genlayer.com/address/0x03EFaa8148120C025b29c9B09dE0CB0c4Fb7d46d">0x03EFaa8148120C025b29c9B09dE0CB0c4Fb7d46d</a></p>
+  <div class="row"><button id="connect">Connect Studionet</button></div>
+  <section>
+    <h2>Open a watch</h2>
+    <label>Left URL</label><input id="left" value="https://example.org" />
+    <label>Right URL</label><input id="right" value="https://info.cern.ch" />
+    <label>Field</label><input id="field" value="iana" />
+    <label>GEN to lock</label><input id="gen" value="1" />
+    <div class="row"><button id="open">open_watch</button></div>
+  </section>
+  <section>
+    <h2>Recheck or refund</h2>
+    <label>Watch id</label><input id="id" value="1" />
+    <div class="row">
+      <button id="read">get_watch</button>
+      <button id="recheck">recheck</button>
+      <button class="ghost" id="refund">refund</button>
+    </div>
+    <pre id="out">Connect, open a watch, then recheck.</pre>
+  </section>
+</main>
+<script type="module">
+import { createClient } from "https://esm.sh/genlayer-js@0.18.0?bundle";
+import { studionet } from "https://esm.sh/genlayer-js@0.18.0/chains?bundle";
+const CONTRACT = "0x03EFaa8148120C025b29c9B09dE0CB0c4Fb7d46d";
+const RPC = "https://studio.genlayer.com/api";
+const ZERO = "0x0000000000000000000000000000000000000000";
+const readClient = createClient({ chain: studionet, endpoint: RPC, account: ZERO });
+let account = null, provider = null;
+const out = document.querySelector("#out");
+function show(v) { out.textContent = typeof v === "string" ? v : JSON.stringify(v, null, 2); }
+async function ensure() {
+  const chainId = "0x" + Number(studionet.id).toString(16);
+  try { await provider.request({ method: "wallet_switchEthereumChain", params: [{ chainId }] }); }
+  catch (e) {
+    if (e.code !== 4902) throw e;
+    await provider.request({ method: "wallet_addEthereumChain", params: [{ chainId, chainName: "GenLayer Studionet", nativeCurrency: { name: "GEN", symbol: "GEN", decimals: 18 }, rpcUrls: [RPC], blockExplorerUrls: ["https://explorer-studio.genlayer.com"] }] });
+  }
+}
+document.querySelector("#connect").onclick = async () => {
+  provider = window.ethereum;
+  if (!provider) return show("No wallet.");
+  account = (await provider.request({ method: "eth_requestAccounts" }))[0];
+  await ensure();
+  show("Connected " + account);
+};
+document.querySelector("#read").onclick = async () => {
+  try {
+    const raw = await readClient.readContract({ address: CONTRACT, functionName: "get_watch", args: [document.querySelector("#id").value], stateStatus: "accepted", account: account || ZERO });
+    show(JSON.parse(raw));
+  } catch (e) { show(e.message || String(e)); }
+};
+async function write(fn, args, value) {
+  if (!account) throw new Error("Connect first.");
+  const client = createClient({ chain: studionet, account, provider });
+  return client.writeContract({ address: CONTRACT, functionName: fn, args, value });
+}
+document.querySelector("#open").onclick = async () => {
+  try { show(await write("open_watch", [document.querySelector("#left").value, document.querySelector("#right").value, document.querySelector("#field").value], BigInt(document.querySelector("#gen").value) * 10n ** 18n)); }
+  catch (e) { show(e.message || String(e)); }
+};
+document.querySelector("#recheck").onclick = async () => {
+  try { show(await write("recheck", [document.querySelector("#id").value], 0n)); }
+  catch (e) { show(e.message || String(e)); }
+};
+document.querySelector("#refund").onclick = async () => {
+  try { show(await write("refund", [document.querySelector("#id").value], 0n)); }
+  catch (e) { show(e.message || String(e)); }
+};
+</script>
+</body>
+</html>
