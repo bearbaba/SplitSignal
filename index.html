@@ -8,26 +8,23 @@
 <style>
   body { margin:0; background:#10141c; color:#f4f6f8; font-family:"Schibsted Grotesk", sans-serif; }
   main { max-width:1100px; margin:0 auto; padding:22px 20px 80px; }
-  nav, .row { display:flex; justify-content:space-between; gap:8px; align-items:center; flex-wrap:wrap; }
+  nav, .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  nav { justify-content:space-between; }
   a, .chip { color:#a7b0bd; font-family:"IBM Plex Mono", monospace; font-size:12px; text-decoration:none; }
   .chip { border:1px solid rgba(255,255,255,.1); border-radius:999px; padding:7px 10px; }
-  h1 { font-size:72px; line-height:.88; margin:36px 0 12px; }
-  h1 span { color:#ff5a1f; }
-  button { font:inherit; border:0; border-radius:12px; padding:11px 14px; cursor:pointer; }
+  h1 { font-size:68px; line-height:.88; margin:32px 0 10px; } h1 span { color:#ff5a1f; }
+  button { font:inherit; border:0; border-radius:12px; padding:10px 14px; cursor:pointer; }
   .orange { background:#ff5a1f; color:white; } .blue { background:#2f80ed; color:white; } .ghost { background:#1b212c; color:white; }
-  .tabs { display:flex; gap:8px; margin:22px 0; }
-  .tabs button.on { background:white; color:#111; }
+  .tabs { display:flex; gap:8px; margin:20px 0; } .tabs button.on { background:white; color:#111; }
+  section { background:#181d27; border:1px solid rgba(255,255,255,.08); border-radius:18px; padding:18px; }
   .board { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-  section, .src { background:#181d27; border:1px solid rgba(255,255,255,.08); border-radius:18px; padding:18px; }
   label { display:block; margin:12px 0 6px; color:#a7b0bd; font-family:"IBM Plex Mono", monospace; font-size:11px; letter-spacing:.08em; }
   input, textarea { width:100%; box-sizing:border-box; border:1px solid rgba(255,255,255,.1); background:#10141c; color:white; border-radius:10px; padding:12px; font:inherit; }
-  textarea { min-height:70px; }
-  .metrics { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
-  .metric b, .src strong { display:block; font-size:28px; margin-top:4px; }
+  .metrics { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:18px 0; }
+  .metric { background:#181d27; border-radius:16px; padding:14px; } .metric b { display:block; font-size:26px; margin-top:4px; }
   pre { white-space:pre-wrap; font-family:"IBM Plex Mono", monospace; font-size:12px; color:#d5dbe3; }
   .hide { display:none; }
-  li { margin:6px 0; }
-  @media (max-width:800px) { h1 { font-size:44px; } .board, .metrics { grid-template-columns:1fr; } }
+  @media (max-width:800px) { h1 { font-size:42px; } .board, .metrics { grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
@@ -37,11 +34,10 @@
     <div class="row"><span class="chip">STUDIONET</span><a class="chip" href="https://explorer-studio.genlayer.com/address/0x4111A4F0cc1C83699FE45d21d4fB1B3c09f63107">0x4111…3107</a><button id="connect" class="blue">Connect</button></div>
   </nav>
   <h1>TWO PAGES.<br><span>ONE SPLIT.</span></h1>
-  <p>Deposit, reserve, seal, recheck, flag, release. Every button is a contract method.</p>
   <div class="metrics">
-    <div class="metric"><span>Pool</span><b id="poolVal">1.00 GEN</b></div>
-    <div class="metric"><span>Reserved</span><b id="reservedVal">0.00 GEN</b></div>
-    <div class="metric"><span>Free</span><b id="freeVal">1.00 GEN</b></div>
+    <div class="metric"><span>Pool</span><b id="poolVal">—</b></div>
+    <div class="metric"><span>Reserved</span><b id="reservedVal">—</b></div>
+    <div class="metric"><span>Free</span><b id="freeVal">—</b></div>
   </div>
   <div class="tabs">
     <button class="on" data-tab="pool">Pool</button>
@@ -53,9 +49,15 @@
     <section>
       <label>DEPOSIT GEN</label><input id="gen" value="1" />
       <label>WITHDRAW WEI</label><input id="withdrawAmt" value="1000000000000000000" />
-      <div class="row"><button class="orange" id="deposit">deposit</button><button class="ghost" id="withdraw">withdraw</button><button class="ghost" id="refresh">get_pool</button></div>
+      <label>SHARE ACCOUNT</label><input id="account" placeholder="0x..." />
+      <div class="row">
+        <button class="orange" id="deposit">deposit</button>
+        <button class="ghost" id="withdraw">withdraw</button>
+        <button class="blue" id="refresh">get_pool</button>
+        <button class="ghost" id="share">get_share</button>
+      </div>
     </section>
-    <section><p>Withdraw reverts if the amount is reserved by an open or sealed watch. That is the solvency check.</p></section>
+    <section><p>Pool holds every deposit. Reserved is coverage on open or sealed watches. Free is what withdraw can touch.</p></section>
   </div>
   <div id="watch" class="hide board">
     <section>
@@ -78,23 +80,26 @@
       </div>
     </section>
   </div>
-  <div id="proof" class="hide board">
-    <div class="src"><span>example.org locked</span><strong>yes</strong></div>
-    <div class="src"><span>info.cern.ch locked</span><strong>no</strong></div>
-    <section><p>Watch 1 is SPLIT. Finder received 1 GEN. Pool left 1 GEN, reserved 0.</p><button class="blue" id="loadProof">Read watch 1</button></section>
+  <div id="proof" class="hide">
+    <section>
+      <p>Watch 1 locked example.org yes and info.cern.ch no, then settled SPLIT.</p>
+      <div class="row">
+        <button class="blue" id="loadProof">get_watch 1</button>
+        <button class="ghost" id="proofPool">get_pool</button>
+        <a class="chip" href="https://studio.genlayer.com/?import-contract=0x4111A4F0cc1C83699FE45d21d4fB1B3c09f63107">Open Studio</a>
+      </div>
+    </section>
   </div>
   <div id="check" class="hide">
     <section>
-      <ol>
-        <li>deposit 2 GEN, get_pool shows 2.00 free.</li>
-        <li>open_watch coverage 1 GEN, get_watch shows OPEN.</li>
-        <li>seal, locked values yes and no.</li>
-        <li>recheck, status SPLIT, pool drops 1 GEN.</li>
-        <li>release after SPLIT reverts. withdraw of reserved coverage reverts.</li>
-      </ol>
+      <div class="row">
+        <button class="orange" id="runRead">Read pool and watch 1</button>
+        <button class="ghost" id="expectSplit">Expect SPLIT</button>
+      </div>
+      <p>Pass means watch 1 is SPLIT, locked yes/no, and reserved is 0.</p>
     </section>
   </div>
-  <pre id="out">Connect and refresh the pool.</pre>
+  <pre id="out">Connect, then get_pool.</pre>
 </main>
 <script type="module">
 import { createClient } from "https://esm.sh/genlayer-js@0.18.0?bundle";
@@ -124,33 +129,45 @@ async function write(fn, args, value = 0n) {
   if (!account) throw new Error("Connect first.");
   return createClient({ chain: studionet, account, provider }).writeContract({ address: CONTRACT, functionName: fn, args, value });
 }
-async function refresh() {
-  const pool = JSON.parse(await readClient.readContract({ address: CONTRACT, functionName: "get_pool", args: [], stateStatus: "accepted", account: account || ZERO }));
-  document.querySelector("#poolVal").textContent = gen(pool.pool);
-  document.querySelector("#reservedVal").textContent = gen(pool.reserved);
-  document.querySelector("#freeVal").textContent = gen(pool.free);
-  show(pool);
+async function pool() {
+  const data = JSON.parse(await readClient.readContract({ address: CONTRACT, functionName: "get_pool", args: [], stateStatus: "accepted", account: account || ZERO }));
+  document.querySelector("#poolVal").textContent = gen(data.pool);
+  document.querySelector("#reservedVal").textContent = gen(data.reserved);
+  document.querySelector("#freeVal").textContent = gen(data.free);
+  return data;
+}
+async function watch(id) {
+  return JSON.parse(await readClient.readContract({ address: CONTRACT, functionName: "get_watch", args: [id], stateStatus: "accepted", account: account || ZERO }));
 }
 document.querySelector("#connect").onclick = async () => {
   provider = window.ethereum;
   if (!provider) return show("No wallet.");
   account = (await provider.request({ method: "eth_requestAccounts" }))[0];
+  document.querySelector("#account").value = account;
   await ensure();
-  show("Connected " + account);
-  refresh();
+  show(await pool());
 };
-document.querySelector("#refresh").onclick = () => refresh().catch((e) => show(e.message || String(e)));
+document.querySelector("#refresh").onclick = () => pool().then(show).catch((e) => show(e.message || String(e)));
+document.querySelector("#proofPool").onclick = document.querySelector("#refresh").onclick;
 document.querySelector("#deposit").onclick = async () => { try { show(await write("deposit", [], BigInt(document.querySelector("#gen").value) * 10n ** 18n)); } catch (e) { show(e.message || String(e)); } };
 document.querySelector("#withdraw").onclick = async () => { try { show(await write("withdraw", [document.querySelector("#withdrawAmt").value])); } catch (e) { show(e.message || String(e)); } };
+document.querySelector("#share").onclick = async () => { try { show(await readClient.readContract({ address: CONTRACT, functionName: "get_share", args: [document.querySelector("#account").value], stateStatus: "accepted", account: account || ZERO })); } catch (e) { show(e.message || String(e)); } };
 document.querySelector("#open").onclick = async () => { try { show(await write("open_watch", [document.querySelector("#left").value, document.querySelector("#right").value, document.querySelector("#field").value, (BigInt(document.querySelector("#cov").value) * 10n ** 18n).toString()])); } catch (e) { show(e.message || String(e)); } };
 document.querySelector("#cancel").onclick = async () => { try { show(await write("cancel", [document.querySelector("#id").value])); } catch (e) { show(e.message || String(e)); } };
 document.querySelector("#seal").onclick = async () => { try { show(await write("seal", [document.querySelector("#id").value])); } catch (e) { show(e.message || String(e)); } };
 document.querySelector("#recheck").onclick = async () => { try { show(await write("recheck", [document.querySelector("#id").value])); } catch (e) { show(e.message || String(e)); } };
 document.querySelector("#flag").onclick = async () => { try { show(await write("flag", [document.querySelector("#id").value, document.querySelector("#reason").value])); } catch (e) { show(e.message || String(e)); } };
 document.querySelector("#release").onclick = async () => { try { show(await write("release", [document.querySelector("#id").value])); } catch (e) { show(e.message || String(e)); } };
-async function readWatch(id) { show(JSON.parse(await readClient.readContract({ address: CONTRACT, functionName: "get_watch", args: [id], stateStatus: "accepted", account: account || ZERO }))); }
-document.querySelector("#read").onclick = () => readWatch(document.querySelector("#id").value).catch((e) => show(e.message || String(e)));
-document.querySelector("#loadProof").onclick = () => readWatch("1").catch((e) => show(e.message || String(e)));
+document.querySelector("#read").onclick = () => watch(document.querySelector("#id").value).then(show).catch((e) => show(e.message || String(e)));
+document.querySelector("#loadProof").onclick = () => watch("1").then(show).catch((e) => show(e.message || String(e)));
+document.querySelector("#runRead").onclick = async () => { try { show({ pool: await pool(), watch: await watch("1") }); } catch (e) { show(e.message || String(e)); } };
+document.querySelector("#expectSplit").onclick = async () => {
+  try {
+    const rec = await watch("1");
+    const ok = rec.status === "SPLIT" && rec.left_locked === "yes" && rec.right_locked === "no";
+    show(ok ? "PASS watch 1 is SPLIT yes/no" : "FAIL " + rec.status);
+  } catch (e) { show(e.message || String(e)); }
+};
 </script>
 </body>
 </html>
