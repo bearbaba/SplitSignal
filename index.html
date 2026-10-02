@@ -4,107 +4,97 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>SplitSignal</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,450;6..72,560&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Schibsted+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
 <style>
-  :root { --ink:#14120e; --muted:#746b60; --line:rgba(20,18,14,.12); --paper:#efe6d6; --card:#f7f1e6; }
-  * { box-sizing:border-box; }
-  body { margin:0; background:radial-gradient(1200px 500px at 10% -10%, #f7f0e2, transparent 50%), var(--paper); color:var(--ink); font-family:Newsreader, Georgia, serif; }
-  main { max-width:1100px; margin:0 auto; padding:28px 20px 80px; }
-  nav { display:flex; justify-content:space-between; align-items:center; }
-  .brand { font-family:"IBM Plex Mono", monospace; letter-spacing:.16em; font-size:12px; text-transform:uppercase; }
-  h1 { font-size:72px; line-height:.86; margin:34px 0 10px; letter-spacing:-.05em; font-weight:560; }
-  .lede { max-width:560px; font-size:20px; color:#3c342c; }
-  .tabs { display:flex; gap:8px; margin:28px 0 16px; }
-  button { font:inherit; border:1px solid var(--line); background:transparent; border-radius:999px; padding:8px 14px; cursor:pointer; }
-  button.on, button.solid { background:var(--ink); color:#f4ecdf; border-color:var(--ink); }
-  .layout { display:grid; grid-template-columns:1.15fr .85fr; gap:14px; }
-  section { background:rgba(255,250,243,.8); border:1px solid var(--line); border-radius:22px; padding:20px; backdrop-filter:blur(8px); }
-  label { display:block; margin:12px 0 6px; font-family:"IBM Plex Mono", monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
-  input, textarea { width:100%; border:1px solid var(--line); background:#fffdf8; border-radius:12px; padding:12px; font:inherit; }
-  textarea { min-height:72px; }
-  .row { display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
-  .metric { display:flex; justify-content:space-between; border-top:1px solid var(--line); padding:10px 0; }
-  .sources { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-  .src { min-height:120px; border-radius:16px; padding:16px; background:#f3eadc; }
-  .src b { font-family:"IBM Plex Mono", monospace; font-size:11px; letter-spacing:.12em; }
-  .big { font-size:34px; margin-top:8px; }
-  pre { white-space:pre-wrap; background:#f3eadc; border-radius:14px; padding:12px; font-family:"IBM Plex Mono", monospace; font-size:12px; }
+  body { margin:0; background:#10141c; color:#f4f6f8; font-family:"Schibsted Grotesk", sans-serif; }
+  main { max-width:1100px; margin:0 auto; padding:22px 20px 80px; }
+  nav, .row { display:flex; justify-content:space-between; gap:8px; align-items:center; flex-wrap:wrap; }
+  a, .chip { color:#a7b0bd; font-family:"IBM Plex Mono", monospace; font-size:12px; text-decoration:none; }
+  .chip { border:1px solid rgba(255,255,255,.1); border-radius:999px; padding:7px 10px; }
+  h1 { font-size:72px; line-height:.88; margin:36px 0 12px; }
+  h1 span { color:#ff5a1f; }
+  button { font:inherit; border:0; border-radius:12px; padding:11px 14px; cursor:pointer; }
+  .orange { background:#ff5a1f; color:white; } .blue { background:#2f80ed; color:white; } .ghost { background:#1b212c; color:white; }
+  .tabs { display:flex; gap:8px; margin:22px 0; }
+  .tabs button.on { background:white; color:#111; }
+  .board { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  section, .src { background:#181d27; border:1px solid rgba(255,255,255,.08); border-radius:18px; padding:18px; }
+  label { display:block; margin:12px 0 6px; color:#a7b0bd; font-family:"IBM Plex Mono", monospace; font-size:11px; letter-spacing:.08em; }
+  input, textarea { width:100%; box-sizing:border-box; border:1px solid rgba(255,255,255,.1); background:#10141c; color:white; border-radius:10px; padding:12px; font:inherit; }
+  textarea { min-height:70px; }
+  .metrics { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .metric b, .src strong { display:block; font-size:28px; margin-top:4px; }
+  pre { white-space:pre-wrap; font-family:"IBM Plex Mono", monospace; font-size:12px; color:#d5dbe3; }
   .hide { display:none; }
-  a { color:#8a4b08; }
-  @media (max-width:800px) { h1 { font-size:44px; } .layout, .sources { grid-template-columns:1fr; } }
+  li { margin:6px 0; }
+  @media (max-width:800px) { h1 { font-size:44px; } .board, .metrics { grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
 <main>
   <nav>
-    <div class="brand">SplitSignal</div>
-    <div class="row">
-      <a href="https://explorer-studio.genlayer.com/address/0x4111A4F0cc1C83699FE45d21d4fB1B3c09f63107">Explorer</a>
-      <button id="connect" class="solid">Connect</button>
-    </div>
+    <b>SPLITSIGNAL</b>
+    <div class="row"><span class="chip">STUDIONET</span><a class="chip" href="https://explorer-studio.genlayer.com/address/0x4111A4F0cc1C83699FE45d21d4fB1B3c09f63107">0x4111…3107</a><button id="connect" class="blue">Connect</button></div>
   </nav>
-  <h1>The pool pays the split.</h1>
-  <p class="lede">Deposit coverage. Seal two public pages. A finder is paid only when that snapshot breaks.</p>
+  <h1>TWO PAGES.<br><span>ONE SPLIT.</span></h1>
+  <p>Deposit, reserve, seal, recheck, flag, release. Every button is a contract method.</p>
+  <div class="metrics">
+    <div class="metric"><span>Pool</span><b id="poolVal">1.00 GEN</b></div>
+    <div class="metric"><span>Reserved</span><b id="reservedVal">0.00 GEN</b></div>
+    <div class="metric"><span>Free</span><b id="freeVal">1.00 GEN</b></div>
+  </div>
   <div class="tabs">
     <button class="on" data-tab="pool">Pool</button>
     <button data-tab="watch">Watch</button>
     <button data-tab="proof">Proof</button>
+    <button data-tab="check">Check</button>
   </div>
-  <div id="pool" class="layout">
+  <div id="pool" class="board">
     <section>
-      <h2>Deposit</h2>
-      <label>GEN</label><input id="gen" value="2" />
-      <label>Withdraw wei</label><input id="withdrawAmt" value="1000000000000000000" />
+      <label>DEPOSIT GEN</label><input id="gen" value="1" />
+      <label>WITHDRAW WEI</label><input id="withdrawAmt" value="1000000000000000000" />
+      <div class="row"><button class="orange" id="deposit">deposit</button><button class="ghost" id="withdraw">withdraw</button><button class="ghost" id="refresh">get_pool</button></div>
+    </section>
+    <section><p>Withdraw reverts if the amount is reserved by an open or sealed watch. That is the solvency check.</p></section>
+  </div>
+  <div id="watch" class="hide board">
+    <section>
+      <label>LEFT</label><input id="left" value="https://example.org" />
+      <label>RIGHT</label><input id="right" value="https://info.cern.ch" />
+      <label>FIELD</label><input id="field" value="iana" />
+      <label>COVERAGE GEN</label><input id="cov" value="1" />
+    </section>
+    <section>
+      <label>WATCH ID</label><input id="id" value="1" />
+      <label>FLAG</label><textarea id="reason">snapshot diverged on iana</textarea>
       <div class="row">
-        <button class="solid" id="deposit">Deposit</button>
-        <button id="withdraw">Withdraw</button>
-        <button id="refresh">Refresh pool</button>
-      </div>
-    </section>
-    <section>
-      <div class="metric"><span>Pool</span><b id="poolVal">—</b></div>
-      <div class="metric"><span>Reserved</span><b id="reservedVal">—</b></div>
-      <div class="metric"><span>Free</span><b id="freeVal">—</b></div>
-      <p>Contract <a href="https://studio.genlayer.com/?import-contract=0x4111A4F0cc1C83699FE45d21d4fB1B3c09f63107">0x4111A4F0cc1C83699FE45d21d4fB1B3c09f63107</a></p>
-    </section>
-  </div>
-  <div id="watch" class="hide">
-    <section>
-      <div class="layout">
-        <div>
-          <label>Left</label><input id="left" value="https://example.org" />
-          <label>Right</label><input id="right" value="https://info.cern.ch" />
-          <label>Field</label><input id="field" value="iana" />
-          <label>Coverage wei</label><input id="cov" value="1000000000000000000" />
-        </div>
-        <div>
-          <label>Watch id</label><input id="id" value="1" />
-          <label>Flag</label><textarea id="reason">snapshot diverged on iana</textarea>
-          <div class="row">
-            <button class="solid" id="open">Open</button>
-            <button id="seal">Seal</button>
-            <button class="solid" id="recheck">Recheck</button>
-            <button id="flag">Flag</button>
-            <button id="cancel">Cancel</button>
-            <button id="release">Release</button>
-            <button id="read">Read</button>
-          </div>
-        </div>
+        <button class="orange" id="open">open_watch</button>
+        <button class="ghost" id="cancel">cancel</button>
+        <button class="blue" id="seal">seal</button>
+        <button class="blue" id="recheck">recheck</button>
+        <button class="ghost" id="flag">flag</button>
+        <button class="ghost" id="release">release</button>
+        <button class="ghost" id="read">get_watch</button>
       </div>
     </section>
   </div>
-  <div id="proof" class="hide">
+  <div id="proof" class="hide board">
+    <div class="src"><span>example.org locked</span><strong>yes</strong></div>
+    <div class="src"><span>info.cern.ch locked</span><strong>no</strong></div>
+    <section><p>Watch 1 is SPLIT. Finder received 1 GEN. Pool left 1 GEN, reserved 0.</p><button class="blue" id="loadProof">Read watch 1</button></section>
+  </div>
+  <div id="check" class="hide">
     <section>
-      <h2>Watch 1, settled</h2>
-      <div class="sources">
-        <div class="src"><b>Locked left</b><div class="big">yes</div></div>
-        <div class="src"><b>Locked right</b><div class="big">no</div></div>
-      </div>
-      <p>Status SPLIT. Coverage 1 GEN. Pool left 1 GEN. Reserved 0.</p>
-      <button class="solid" id="loadProof">Read watch 1</button>
+      <ol>
+        <li>deposit 2 GEN, get_pool shows 2.00 free.</li>
+        <li>open_watch coverage 1 GEN, get_watch shows OPEN.</li>
+        <li>seal, locked values yes and no.</li>
+        <li>recheck, status SPLIT, pool drops 1 GEN.</li>
+        <li>release after SPLIT reverts. withdraw of reserved coverage reverts.</li>
+      </ol>
     </section>
   </div>
-  <pre id="out">Connect, then refresh the pool.</pre>
+  <pre id="out">Connect and refresh the pool.</pre>
 </main>
 <script type="module">
 import { createClient } from "https://esm.sh/genlayer-js@0.18.0?bundle";
@@ -115,11 +105,12 @@ const ZERO = "0x0000000000000000000000000000000000000000";
 const readClient = createClient({ chain: studionet, endpoint: RPC, account: ZERO });
 let account = null, provider = null;
 const out = document.querySelector("#out");
+const gen = (v) => (Number(v) / 1e18).toFixed(2) + " GEN";
 function show(v) { out.textContent = typeof v === "string" ? v : JSON.stringify(v, null, 2); }
-document.querySelectorAll(".tabs button").forEach((btn) => btn.onclick = () => {
-  document.querySelectorAll(".tabs button").forEach((b) => b.classList.remove("on"));
-  btn.classList.add("on");
-  ["pool","watch","proof"].forEach((id) => document.getElementById(id).classList.toggle("hide", id !== btn.dataset.tab));
+document.querySelectorAll(".tabs button").forEach((b) => b.onclick = () => {
+  document.querySelectorAll(".tabs button").forEach((x) => x.classList.remove("on"));
+  b.classList.add("on");
+  ["pool","watch","proof","check"].forEach((id) => document.getElementById(id).classList.toggle("hide", id !== b.dataset.tab));
 });
 async function ensure() {
   const chainId = "0x" + Number(studionet.id).toString(16);
@@ -134,11 +125,10 @@ async function write(fn, args, value = 0n) {
   return createClient({ chain: studionet, account, provider }).writeContract({ address: CONTRACT, functionName: fn, args, value });
 }
 async function refresh() {
-  const raw = await readClient.readContract({ address: CONTRACT, functionName: "get_pool", args: [], stateStatus: "accepted", account: account || ZERO });
-  const pool = JSON.parse(raw);
-  document.querySelector("#poolVal").textContent = pool.pool;
-  document.querySelector("#reservedVal").textContent = pool.reserved;
-  document.querySelector("#freeVal").textContent = pool.free;
+  const pool = JSON.parse(await readClient.readContract({ address: CONTRACT, functionName: "get_pool", args: [], stateStatus: "accepted", account: account || ZERO }));
+  document.querySelector("#poolVal").textContent = gen(pool.pool);
+  document.querySelector("#reservedVal").textContent = gen(pool.reserved);
+  document.querySelector("#freeVal").textContent = gen(pool.free);
   show(pool);
 }
 document.querySelector("#connect").onclick = async () => {
@@ -152,14 +142,15 @@ document.querySelector("#connect").onclick = async () => {
 document.querySelector("#refresh").onclick = () => refresh().catch((e) => show(e.message || String(e)));
 document.querySelector("#deposit").onclick = async () => { try { show(await write("deposit", [], BigInt(document.querySelector("#gen").value) * 10n ** 18n)); } catch (e) { show(e.message || String(e)); } };
 document.querySelector("#withdraw").onclick = async () => { try { show(await write("withdraw", [document.querySelector("#withdrawAmt").value])); } catch (e) { show(e.message || String(e)); } };
-document.querySelector("#open").onclick = async () => { try { show(await write("open_watch", [document.querySelector("#left").value, document.querySelector("#right").value, document.querySelector("#field").value, document.querySelector("#cov").value])); } catch (e) { show(e.message || String(e)); } };
+document.querySelector("#open").onclick = async () => { try { show(await write("open_watch", [document.querySelector("#left").value, document.querySelector("#right").value, document.querySelector("#field").value, (BigInt(document.querySelector("#cov").value) * 10n ** 18n).toString()])); } catch (e) { show(e.message || String(e)); } };
+document.querySelector("#cancel").onclick = async () => { try { show(await write("cancel", [document.querySelector("#id").value])); } catch (e) { show(e.message || String(e)); } };
 document.querySelector("#seal").onclick = async () => { try { show(await write("seal", [document.querySelector("#id").value])); } catch (e) { show(e.message || String(e)); } };
 document.querySelector("#recheck").onclick = async () => { try { show(await write("recheck", [document.querySelector("#id").value])); } catch (e) { show(e.message || String(e)); } };
 document.querySelector("#flag").onclick = async () => { try { show(await write("flag", [document.querySelector("#id").value, document.querySelector("#reason").value])); } catch (e) { show(e.message || String(e)); } };
-document.querySelector("#cancel").onclick = async () => { try { show(await write("cancel", [document.querySelector("#id").value])); } catch (e) { show(e.message || String(e)); } };
 document.querySelector("#release").onclick = async () => { try { show(await write("release", [document.querySelector("#id").value])); } catch (e) { show(e.message || String(e)); } };
-document.querySelector("#read").onclick = async () => { try { show(JSON.parse(await readClient.readContract({ address: CONTRACT, functionName: "get_watch", args: [document.querySelector("#id").value], stateStatus: "accepted", account: account || ZERO }))); } catch (e) { show(e.message || String(e)); } };
-document.querySelector("#loadProof").onclick = async () => { try { show(JSON.parse(await readClient.readContract({ address: CONTRACT, functionName: "get_watch", args: ["1"], stateStatus: "accepted", account: account || ZERO }))); } catch (e) { show(e.message || String(e)); } };
+async function readWatch(id) { show(JSON.parse(await readClient.readContract({ address: CONTRACT, functionName: "get_watch", args: [id], stateStatus: "accepted", account: account || ZERO }))); }
+document.querySelector("#read").onclick = () => readWatch(document.querySelector("#id").value).catch((e) => show(e.message || String(e)));
+document.querySelector("#loadProof").onclick = () => readWatch("1").catch((e) => show(e.message || String(e)));
 </script>
 </body>
 </html>
