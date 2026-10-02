@@ -81,7 +81,7 @@
     <label>WATCH ID</label><input id="id" value="1" />
     <div class="row" style="margin-top:16px"><button id="read" class="fill">Read</button><button id="recheck" class="hot">Recheck</button><button id="refund">Refund</button></div>
   </section>
-  <pre id="out">Connect a Studionet wallet.</pre>
+  <details id="log"><summary class="mono">Receipt</summary><pre id="out">Connect a Studionet wallet.</pre></details>
 </main>
 <script type="module">
 import { createClient } from "https://esm.sh/genlayer-js@0.18.0?bundle";
@@ -91,7 +91,7 @@ const ZERO = "0x0000000000000000000000000000000000000000";
 const out = document.querySelector("#out");
 let account = null, provider = null;
 const gen = (v) => (Number(v) / 1e18).toFixed(2) + " GEN";
-function show(v) { out.textContent = typeof v === "string" ? v : JSON.stringify(v, null, 2); }
+function show(v) { const text = typeof v === "string" ? v : JSON.stringify(v, null, 2); out.textContent = text; document.querySelector("#log").open = text.startsWith("REJECTED"); }
 function readClient() { return createClient({ chain: studionet, endpoint: "https://studio.genlayer.com/api", account: account || ZERO }); }
 document.querySelectorAll(".tabs button").forEach((b) => b.onclick = () => {
   document.querySelectorAll(".tabs button").forEach((x) => x.classList.remove("on"));
