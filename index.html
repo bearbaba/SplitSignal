@@ -4,46 +4,92 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>SplitSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,450;6..72,560&display=swap" rel="stylesheet" />
 <style>
-  body { margin: 0; background: #f4f1ea; color: #1b1914; font-family: Georgia, serif; }
-  main { max-width: 720px; margin: 0 auto; padding: 48px 20px 80px; }
-  h1 { font-weight: 500; font-size: 40px; margin: 0 0 8px; }
-  p { line-height: 1.5; }
-  .muted { color: #6e675e; }
-  a { color: #8d4e12; }
-  section { background: #fff; border: 1px solid #e5ddd2; border-radius: 18px; padding: 18px; margin: 16px 0; }
-  label { display: block; font-size: 13px; margin: 12px 0 6px; }
-  input { width: 100%; box-sizing: border-box; border: 1px solid #d9d0c4; border-radius: 8px; padding: 10px 12px; font: inherit; }
-  .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
-  button { font: inherit; border: 0; border-radius: 999px; padding: 8px 14px; background: #1b1914; color: #f4f1ea; cursor: pointer; }
-  button.ghost { background: transparent; color: #1b1914; border: 1px solid #d9d0c4; }
-  pre { white-space: pre-wrap; background: #f4f1ea; border-radius: 10px; padding: 12px; font-family: ui-monospace, monospace; font-size: 12px; }
+  :root { --ink:#17140f; --muted:#6d6458; --line:#e3d7c6; --paper:#f2eadc; --card:#fffaf3; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--paper); color:var(--ink); font-family:Newsreader, Georgia, serif; }
+  main { max-width:1040px; margin:0 auto; padding:28px 18px 70px; }
+  nav { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+  nav a, nav button { font-family:"IBM Plex Mono", monospace; font-size:12px; letter-spacing:.08em; text-transform:uppercase; }
+  a { color:#8a4b08; text-decoration:none; }
+  h1 { font-size:64px; line-height:.9; margin:28px 0 8px; letter-spacing:-.045em; }
+  h2 { margin:0 0 8px; font-weight:560; }
+  .muted { color:var(--muted); }
+  .tabs { display:flex; gap:8px; margin:22px 0; }
+  .tabs button, button { border:1px solid var(--line); background:#fff; color:var(--ink); border-radius:999px; padding:8px 14px; cursor:pointer; font:inherit; }
+  .tabs button.on, button.solid { background:var(--ink); color:#f6f0e6; border-color:var(--ink); }
+  .layout { display:grid; grid-template-columns:1.1fr .9fr; gap:14px; }
+  section, .card { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:18px; }
+  label { display:block; margin:12px 0 6px; font-family:"IBM Plex Mono", monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+  input { width:100%; border:1px solid var(--line); border-radius:10px; padding:11px 12px; font:inherit; background:#fff; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
+  .sources { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .src { background:#f6efe4; border-radius:14px; padding:14px; min-height:110px; }
+  .src b { display:block; font-family:"IBM Plex Mono", monospace; font-size:11px; letter-spacing:.12em; }
+  .big { font-size:28px; margin-top:8px; }
+  pre { white-space:pre-wrap; background:#f6efe4; border-radius:12px; padding:12px; font-family:"IBM Plex Mono", monospace; font-size:12px; }
+  .hide { display:none; }
+  @media (max-width:800px) { .layout, .sources { grid-template-columns:1fr; } h1 { font-size:42px; } }
 </style>
 </head>
 <body>
 <main>
-  <h1>SplitSignal</h1>
-  <p class="muted">Two public pages. One field. The bond pays the account that catches them diverging.</p>
-  <p>Contract <a href="https://explorer-studio.genlayer.com/address/0x03EFaa8148120C025b29c9B09dE0CB0c4Fb7d46d">0x03EFaa8148120C025b29c9B09dE0CB0c4Fb7d46d</a></p>
-  <div class="row"><button id="connect">Connect Studionet</button></div>
-  <section>
-    <h2>Open a watch</h2>
-    <label>Left URL</label><input id="left" value="https://example.org" />
-    <label>Right URL</label><input id="right" value="https://info.cern.ch" />
-    <label>Field</label><input id="field" value="iana" />
-    <label>GEN to lock</label><input id="gen" value="1" />
-    <div class="row"><button id="open">open_watch</button></div>
-  </section>
-  <section>
-    <h2>Recheck or refund</h2>
-    <label>Watch id</label><input id="id" value="1" />
+  <nav>
+    <b>SplitSignal</b>
     <div class="row">
-      <button id="read">get_watch</button>
-      <button id="recheck">recheck</button>
-      <button class="ghost" id="refund">refund</button>
+      <a href="https://explorer-studio.genlayer.com/address/0x03EFaa8148120C025b29c9B09dE0CB0c4Fb7d46d">Explorer</a>
+      <a href="https://github.com/bearbaba/SplitSignal">Repo</a>
+      <button id="connect" class="solid">Connect</button>
     </div>
-    <pre id="out">Connect, open a watch, then recheck.</pre>
-  </section>
+  </nav>
+  <h1>Catch the split.</h1>
+  <p class="muted">A funder locks GEN on two public pages. The account that catches them diverge gets the bond.</p>
+  <div class="tabs">
+    <button class="on" data-tab="desk">Desk</button>
+    <button data-tab="proof">Watch 1</button>
+    <button data-tab="rules">Rules</button>
+  </div>
+  <div id="desk" class="layout">
+    <section>
+      <h2>Open</h2>
+      <label>Left URL</label><input id="left" value="https://example.org" />
+      <label>Right URL</label><input id="right" value="https://info.cern.ch" />
+      <label>Field</label><input id="field" value="iana" />
+      <label>GEN</label><input id="gen" value="1" />
+      <div class="row"><button class="solid" id="open">Lock bond</button></div>
+    </section>
+    <section>
+      <h2>Recheck</h2>
+      <label>Watch id</label><input id="id" value="1" />
+      <div class="row">
+        <button class="solid" id="read">Read</button>
+        <button id="recheck">Recheck</button>
+        <button id="refund">Refund</button>
+      </div>
+      <pre id="out">Connect a Studionet wallet.</pre>
+    </section>
+  </div>
+  <div id="proof" class="hide">
+    <section>
+      <h2>Settled on Studionet</h2>
+      <div class="sources">
+        <div class="src"><b>Left · example.org</b><div class="big">yes</div></div>
+        <div class="src"><b>Right · info.cern.ch</b><div class="big">no</div></div>
+      </div>
+      <p>Field <b>iana</b>. Amount <b>1 GEN</b>. Status <b>SPLIT</b>. Finder <b>0x4C7c…8Dcb</b>.</p>
+      <div class="row"><button class="solid" id="loadProof">Read watch 1 from chain</button></div>
+      <pre id="proofOut">Not loaded.</pre>
+    </section>
+  </div>
+  <div id="rules" class="hide">
+    <section>
+      <h2>What the contract does</h2>
+      <p>Validators render both pages and agree with strict_eq. The app does not score them.</p>
+      <p>SPLIT pays the caller once. A second recheck reverts. AGREED does not move the bond. An unreadable page does not pay. Refund is available after one hour and is the known limit: it does not require the pages to still be dead.</p>
+      <p>Contract <a href="https://studio.genlayer.com/?import-contract=0x03EFaa8148120C025b29c9B09dE0CB0c4Fb7d46d">0x03EFaa8148120C025b29c9B09dE0CB0c4Fb7d46d</a></p>
+    </section>
+  </div>
 </main>
 <script type="module">
 import { createClient } from "https://esm.sh/genlayer-js@0.18.0?bundle";
@@ -54,7 +100,12 @@ const ZERO = "0x0000000000000000000000000000000000000000";
 const readClient = createClient({ chain: studionet, endpoint: RPC, account: ZERO });
 let account = null, provider = null;
 const out = document.querySelector("#out");
-function show(v) { out.textContent = typeof v === "string" ? v : JSON.stringify(v, null, 2); }
+function show(el, v) { el.textContent = typeof v === "string" ? v : JSON.stringify(v, null, 2); }
+document.querySelectorAll(".tabs button").forEach((btn) => btn.onclick = () => {
+  document.querySelectorAll(".tabs button").forEach((b) => b.classList.remove("on"));
+  btn.classList.add("on");
+  ["desk", "proof", "rules"].forEach((id) => document.getElementById(id).classList.toggle("hide", id !== btn.dataset.tab));
+});
 async function ensure() {
   const chainId = "0x" + Number(studionet.id).toString(16);
   try { await provider.request({ method: "wallet_switchEthereumChain", params: [{ chainId }] }); }
@@ -63,36 +114,26 @@ async function ensure() {
     await provider.request({ method: "wallet_addEthereumChain", params: [{ chainId, chainName: "GenLayer Studionet", nativeCurrency: { name: "GEN", symbol: "GEN", decimals: 18 }, rpcUrls: [RPC], blockExplorerUrls: ["https://explorer-studio.genlayer.com"] }] });
   }
 }
+async function read(id) {
+  const raw = await readClient.readContract({ address: CONTRACT, functionName: "get_watch", args: [String(id)], stateStatus: "accepted", account: account || ZERO });
+  return JSON.parse(raw);
+}
 document.querySelector("#connect").onclick = async () => {
   provider = window.ethereum;
-  if (!provider) return show("No wallet.");
+  if (!provider) return show(out, "No wallet.");
   account = (await provider.request({ method: "eth_requestAccounts" }))[0];
   await ensure();
-  show("Connected " + account);
+  show(out, "Connected " + account);
 };
-document.querySelector("#read").onclick = async () => {
-  try {
-    const raw = await readClient.readContract({ address: CONTRACT, functionName: "get_watch", args: [document.querySelector("#id").value], stateStatus: "accepted", account: account || ZERO });
-    show(JSON.parse(raw));
-  } catch (e) { show(e.message || String(e)); }
-};
+document.querySelector("#read").onclick = async () => { try { show(out, await read(document.querySelector("#id").value)); } catch (e) { show(out, e.message || String(e)); } };
+document.querySelector("#loadProof").onclick = async () => { try { show(document.querySelector("#proofOut"), await read("1")); } catch (e) { show(document.querySelector("#proofOut"), e.message || String(e)); } };
 async function write(fn, args, value) {
   if (!account) throw new Error("Connect first.");
-  const client = createClient({ chain: studionet, account, provider });
-  return client.writeContract({ address: CONTRACT, functionName: fn, args, value });
+  return createClient({ chain: studionet, account, provider }).writeContract({ address: CONTRACT, functionName: fn, args, value });
 }
-document.querySelector("#open").onclick = async () => {
-  try { show(await write("open_watch", [document.querySelector("#left").value, document.querySelector("#right").value, document.querySelector("#field").value], BigInt(document.querySelector("#gen").value) * 10n ** 18n)); }
-  catch (e) { show(e.message || String(e)); }
-};
-document.querySelector("#recheck").onclick = async () => {
-  try { show(await write("recheck", [document.querySelector("#id").value], 0n)); }
-  catch (e) { show(e.message || String(e)); }
-};
-document.querySelector("#refund").onclick = async () => {
-  try { show(await write("refund", [document.querySelector("#id").value], 0n)); }
-  catch (e) { show(e.message || String(e)); }
-};
+document.querySelector("#open").onclick = async () => { try { show(out, await write("open_watch", [document.querySelector("#left").value, document.querySelector("#right").value, document.querySelector("#field").value], BigInt(document.querySelector("#gen").value) * 10n ** 18n)); } catch (e) { show(out, e.message || String(e)); } };
+document.querySelector("#recheck").onclick = async () => { try { show(out, await write("recheck", [document.querySelector("#id").value], 0n)); } catch (e) { show(out, e.message || String(e)); } };
+document.querySelector("#refund").onclick = async () => { try { show(out, await write("refund", [document.querySelector("#id").value], 0n)); } catch (e) { show(out, e.message || String(e)); } };
 </script>
 </body>
 </html>
