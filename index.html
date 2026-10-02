@@ -175,7 +175,16 @@ document.querySelector("#openWatch").onclick = async () => {
 };
 async function readWatch() { const rec = await watch(document.querySelector("#id").value); paint(rec); show(rec); }
 document.querySelector("#read").onclick = () => readWatch().catch((e) => show("REJECTED: " + (e.message || String(e))));
-document.querySelector("#dashRead").onclick = () => { document.querySelector("#id").value = "1"; readWatch().catch((e) => show("REJECTED: " + (e.message || String(e)))); };
+async function board() {
+  const raw = await readClient().readContract({ address: CONTRACT, functionName: "next_watch", args: [], stateStatus: "accepted" });
+  const next = Number(raw);
+  const rows = [];
+  for (let i = 1; i < next; i++) rows.push(await watch(String(i)));
+  if (rows[0]) paint(rows[0]);
+  show(rows.length ? rows : "No watch yet");
+  return rows;
+}
+document.querySelector("#dashRead").onclick = () => board().catch((e) => show("REJECTED: " + (e.message || String(e))));
 document.querySelector("#recheck").onclick = async () => { try { await write("recheck", [document.querySelector("#id").value]); } catch (e) { show("REJECTED: " + (e.message || String(e))); } };
 document.querySelector("#refund").onclick = async () => { try { await write("refund", [document.querySelector("#id").value]); } catch (e) { show("REJECTED: " + (e.message || String(e))); } };
 </script>
