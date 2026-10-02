@@ -4,51 +4,52 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>SplitSignal</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Schibsted+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,500&family=Schibsted+Grotesk:wght@500;600&display=swap" rel="stylesheet" />
 <style>
-  :root { --bg:#0e1116; --card:#171c25; --line:rgba(255,255,255,.08); --muted:#9aa3b2; --ink:#f6f7f8; --hot:#ff5a1f; }
+  :root { --bg:#10140f; --card:#1a2118; --line:rgba(232,224,206,.14); --muted:#b4b09f; --ink:#f4f0e6; --hot:#e4572e; }
   * { box-sizing:border-box; }
-  body { margin:0; background:var(--bg); color:var(--ink); font-family:"Schibsted Grotesk",sans-serif; }
-  main { max-width:1100px; margin:0 auto; padding:22px 20px 72px; }
+  body { margin:0; background:radial-gradient(800px 360px at 10% -10%, rgba(228,87,46,.18), transparent 55%), var(--bg); color:var(--ink); font-family:"Schibsted Grotesk",sans-serif; }
+  main { max-width:1080px; margin:0 auto; padding:28px 20px 80px; }
   nav, .row, .tabs { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
   nav { justify-content:space-between; }
-  a, .mono { color:var(--muted); font-family:"IBM Plex Mono",monospace; font-size:12px; text-decoration:none; }
+  a, .mono { font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--muted); text-decoration:none; }
   .chip { border:1px solid var(--line); border-radius:999px; padding:8px 12px; }
-  h1 { font-size:52px; line-height:.92; margin:26px 0 8px; letter-spacing:-.04em; }
-  h1 span { color:var(--hot); }
-  .lead { color:var(--muted); max-width:62ch; }
-  .tabs { margin:22px 0; }
-  .tabs button.on { background:white; color:#111; }
+  h1 { font-family:"Newsreader",serif; font-weight:500; font-size:72px; line-height:.9; margin:28px 0 10px; }
+  h1 i { color:var(--hot); }
+  .lead { max-width:58ch; color:#ddd6c6; font-size:18px; }
+  .tabs { margin:24px 0; }
+  .tabs button.on { background:var(--ink); color:#17140f; }
   .hide { display:none; }
   .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
-  .split { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-  section, .card { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:16px; }
-  .card b { display:block; font-size:28px; margin-top:6px; }
-  label { display:block; margin:12px 0 6px; color:var(--muted); font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.08em; }
-  input { width:100%; border:1px solid var(--line); background:#0e1116; color:white; border-radius:12px; padding:12px; font:inherit; }
-  button { font:inherit; border:0; border-radius:999px; padding:10px 14px; cursor:pointer; background:#242b36; color:white; }
-  .hot { background:var(--hot); } .fill { background:#f4f6f8; color:#111; }
-  .pair { display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:center; }
-  .src { background:#0e1116; border-radius:14px; padding:14px; min-height:110px; }
-  .src b { display:block; font-size:36px; margin-top:8px; }
-  .pill { border-radius:999px; padding:4px 8px; background:#243044; font-family:"IBM Plex Mono",monospace; font-size:12px; }
-  .OPEN { background:#1d3a2a; } .SPLIT { background:var(--hot); }
-  pre { white-space:pre-wrap; font-family:"IBM Plex Mono",monospace; font-size:12px; color:#d5dbe3; }
-  @media (max-width:800px) { h1 { font-size:36px; } .grid, .split, .pair { grid-template-columns:1fr; } }
+  .split { display:grid; grid-template-columns:1.1fr .9fr; gap:14px; }
+  section, .card { background:rgba(26,33,24,.92); border:1px solid var(--line); border-radius:22px; padding:18px; }
+  .card b, .src b { display:block; margin-top:6px; }
+  .card b { font-size:30px; }
+  label { display:block; margin:14px 0 6px; color:var(--muted); font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.12em; }
+  input { width:100%; border:1px solid var(--line); background:#10140f; color:white; border-radius:14px; padding:12px; font:inherit; }
+  button { font:inherit; border:1px solid var(--line); background:transparent; color:white; border-radius:999px; padding:10px 14px; cursor:pointer; }
+  .hot { background:var(--hot); border-color:var(--hot); } .fill { background:var(--ink); color:#17140f; border-color:var(--ink); }
+  .pair { display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:stretch; margin-top:14px; }
+  .src { background:#10140f; border-radius:16px; padding:14px; min-height:120px; }
+  .src b { font-size:40px; }
+  .pill { border-radius:999px; padding:4px 8px; background:#2a3328; font-family:"IBM Plex Mono",monospace; font-size:12px; }
+  .OPEN { background:#24382a; } .SPLIT { background:var(--hot); }
+  pre { white-space:pre-wrap; font-family:"IBM Plex Mono",monospace; font-size:12px; color:#ddd6c6; }
+  @media (max-width:800px) { h1 { font-size:46px; } .grid, .split, .pair { grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
 <main>
   <nav>
-    <b>SPLITSIGNAL</b>
+    <b>SplitSignal</b>
     <div class="row">
-      <span class="chip mono">STUDIONET</span>
+      <span class="chip mono">Studionet</span>
       <a class="chip" href="https://studio.genlayer.com/?import-contract=0x07aeE113dD0248DB23BC0259ba1197D0cFC9e15b">0x07ae…e15b</a>
       <button id="connect" class="fill">Connect</button>
     </div>
   </nav>
-  <h1>Two pages.<br><span>One window.</span></h1>
-  <p class="lead">Deposit GEN, lock a window only when both pages agree, and pay the account that catches the split.</p>
+  <h1>Two pages.<br><i>One window.</i></h1>
+  <p class="lead">Lock GEN only while two public pages agree. The account that catches the split is paid.</p>
   <div class="tabs">
     <button class="on" data-tab="dash">Dashboard</button>
     <button data-tab="open">Open</button>
@@ -63,8 +64,8 @@
     </div>
     <section style="margin-top:14px">
       <div class="row" style="justify-content:space-between"><b>Watch 1</b><span class="pill" id="dashPill">—</span></div>
-      <p class="mono" id="dashMeta">Connect, then read.</p>
-      <button id="dashRead" class="fill">Read watch 1</button>
+      <p class="mono" id="dashMeta">Connect, then load the book.</p>
+      <button id="dashRead" class="fill">Load book</button>
     </section>
   </div>
   <div id="open" class="hide split">
@@ -76,18 +77,18 @@
         <div style="flex:1"><label>BOND GEN</label><input id="bond" value="1" /></div>
         <div style="flex:1"><label>HOURS</label><input id="hours" value="24" /></div>
       </div>
-      <div class="row" style="margin-top:14px"><button id="openWatch" class="hot">Lock window</button></div>
+      <div class="row" style="margin-top:16px"><button id="openWatch" class="hot">Lock window</button></div>
     </section>
-    <section><p>Both pages must agree. A pair that already differs reverts and does not reserve GEN.</p></section>
+    <section><p>A pair that already differs is rejected. GEN stays free.</p></section>
   </div>
   <div id="watch" class="hide">
     <section>
       <div class="row" style="justify-content:space-between"><b id="title">No watch yet</b><span class="pill" id="pill">—</span></div>
       <label>WATCH ID</label><input id="id" value="1" />
       <div class="pair">
-        <div class="src">Left<b id="leftVal">—</b><span class="mono" id="leftUrl"></span></div>
+        <div class="src"><span class="mono">LEFT</span><b id="leftVal">—</b><span class="mono" id="leftUrl"></span></div>
         <div id="mark">=</div>
-        <div class="src">Right<b id="rightVal">—</b><span class="mono" id="rightUrl"></span></div>
+        <div class="src"><span class="mono">RIGHT</span><b id="rightVal">—</b><span class="mono" id="rightUrl"></span></div>
       </div>
       <p class="mono" id="meta">Frozen values appear after a read.</p>
       <div class="row"><button id="read" class="fill">Read</button><button id="recheck" class="hot">Recheck</button><button id="refund">Refund</button></div>
@@ -97,7 +98,6 @@
     <section>
       <label>AMOUNT GEN</label><input id="dep" value="1" />
       <div class="row"><button id="deposit" class="fill">Deposit</button><button id="withdraw">Withdraw</button><button id="refresh">Refresh</button></div>
-      <p class="mono">Free can be withdrawn. Reserved stays locked until split or refund.</p>
     </section>
   </div>
   <pre id="out">Connect a Studionet wallet.</pre>
@@ -153,6 +153,14 @@ function paint(rec) {
   document.querySelector("#meta").textContent = meta;
   document.querySelector("#dashMeta").textContent = meta;
 }
+async function board() {
+  const raw = await readClient().readContract({ address: CONTRACT, functionName: "next_watch", args: [], stateStatus: "accepted" });
+  const next = Number(raw);
+  const rows = [];
+  for (let i = 1; i < next; i++) rows.push(await watch(String(i)));
+  if (rows[0]) paint(rows[0]);
+  show(rows.length ? rows : "No watch yet");
+}
 document.querySelector("#connect").onclick = async () => {
   try {
     provider = window.ethereum;
@@ -160,8 +168,8 @@ document.querySelector("#connect").onclick = async () => {
     account = (await provider.request({ method: "eth_requestAccounts" }))[0];
     document.querySelector("#connect").textContent = account.slice(0, 6) + "…" + account.slice(-4);
     show("CONNECTED " + account);
-    show(await pool());
-    paint(await watch("1"));
+    await pool();
+    await board();
   } catch (e) { show("REJECTED: " + (e.message || String(e))); }
 };
 document.querySelector("#refresh").onclick = () => pool().then(show).catch((e) => show("REJECTED: " + (e.message || String(e))));
@@ -173,17 +181,7 @@ document.querySelector("#openWatch").onclick = async () => {
     await write("open_watch", [document.querySelector("#left").value.trim(), document.querySelector("#right").value.trim(), document.querySelector("#field").value.trim(), document.querySelector("#hours").value.trim(), amount]);
   } catch (e) { show("REJECTED: " + (e.message || String(e))); }
 };
-async function readWatch() { const rec = await watch(document.querySelector("#id").value); paint(rec); show(rec); }
-document.querySelector("#read").onclick = () => readWatch().catch((e) => show("REJECTED: " + (e.message || String(e))));
-async function board() {
-  const raw = await readClient().readContract({ address: CONTRACT, functionName: "next_watch", args: [], stateStatus: "accepted" });
-  const next = Number(raw);
-  const rows = [];
-  for (let i = 1; i < next; i++) rows.push(await watch(String(i)));
-  if (rows[0]) paint(rows[0]);
-  show(rows.length ? rows : "No watch yet");
-  return rows;
-}
+document.querySelector("#read").onclick = () => watch(document.querySelector("#id").value).then((rec) => { paint(rec); show(rec); }).catch((e) => show("REJECTED: " + (e.message || String(e))));
 document.querySelector("#dashRead").onclick = () => board().catch((e) => show("REJECTED: " + (e.message || String(e))));
 document.querySelector("#recheck").onclick = async () => { try { await write("recheck", [document.querySelector("#id").value]); } catch (e) { show("REJECTED: " + (e.message || String(e))); } };
 document.querySelector("#refund").onclick = async () => { try { await write("refund", [document.querySelector("#id").value]); } catch (e) { show("REJECTED: " + (e.message || String(e))); } };
