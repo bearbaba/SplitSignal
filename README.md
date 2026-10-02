@@ -1,45 +1,11 @@
 # SplitSignal
 
-A bond that pays the account catching two public pages diverge.
+A Studionet pool that locks GEN on two https pages and one field.
 
-A funder locks GEN against two URLs and one field. Anyone can recheck.
-Validators render both pages. If the field values differ, the finder is paid.
-If they still match, the watch stays AGREED and the bond stays put.
-An open watch can be refunded after one hour.
+Deployed contract: `0x07aeE113dD0248DB23BC0259ba1197D0cFC9e15b`
 
-This is not a warranty desk and not a delivery escrow.
-The question is whether two public sources still say the same thing.
+Watch 1 is OPEN: both IANA pages matched `iana` at open, 1 GEN reserved until 21:55 on 3 Oct 2026. A pair that already differs reverts with `already split` and does not reserve funds.
 
-## Live
+`recheck` pays the caller 95% when the frozen values diverge. Five percent stays in the pool. `refund` returns an open bond to the funder after the window. Neither path has a successful transaction yet.
 
-- Network: Studionet
-- Contract: 0x03EFaa8148120C025b29c9B09dE0CB0c4Fb7d46d
-- Studio: https://studio.genlayer.com/?import-contract=0x03EFaa8148120C025b29c9B09dE0CB0c4Fb7d46d
-- Explorer: https://explorer-studio.genlayer.com/address/0x03EFaa8148120C025b29c9B09dE0CB0c4Fb7d46d
-- App: the deployed Vercel URL
-
-## Proven watch
-
-| Field | Value |
-| --- | --- |
-| id | 1 |
-| left | https://example.org = yes |
-| right | https://info.cern.ch = no |
-| token | iana |
-| amount | 1 GEN |
-| status | SPLIT |
-
-## Methods
-
-| Method | Who | Effect |
-| --- | --- | --- |
-| open_watch | funder, payable | locks GEN, freezes both URLs and the field |
-| recheck | anyone | SPLIT pays the caller, AGREED keeps the bond |
-| refund | anyone, after 1 hour | returns an open bond to the funder |
-| get_watch | anyone | reads the watch |
-
-## Files
-
-- contracts/SplitSignal.py
-- index.html
-- ARCHITECTURE.md
+App: https://splitsignal-ten.vercel.app/
