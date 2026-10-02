@@ -6,26 +6,35 @@
 <title>SplitSignal</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Schibsted+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
 <style>
-  body { margin:0; background:#10141c; color:#f4f6f8; font-family:"Schibsted Grotesk", sans-serif; }
-  main { max-width:980px; margin:0 auto; padding:22px 20px 80px; }
+  :root { --bg:#0c1016; --card:#161c27; --line:rgba(255,255,255,.08); --muted:#9aa3b2; --ink:#f5f7fa; --hot:#ff5a1f; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:"Schibsted Grotesk",sans-serif; }
+  main { max-width:1080px; margin:0 auto; padding:22px 20px 72px; }
   nav, .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
   nav { justify-content:space-between; }
-  a, .chip { color:#a7b0bd; font-family:"IBM Plex Mono", monospace; font-size:12px; text-decoration:none; }
-  .chip { border:1px solid rgba(255,255,255,.1); border-radius:999px; padding:7px 10px; }
-  h1 { font-size:64px; line-height:.88; margin:28px 0 8px; } h1 span { color:#ff5a1f; }
-  p.lead { color:#a7b0bd; max-width:62ch; }
+  a, .mono { color:var(--muted); font-family:"IBM Plex Mono",monospace; font-size:12px; text-decoration:none; }
+  .chip { border:1px solid var(--line); border-radius:999px; padding:7px 10px; }
+  h1 { font-size:64px; line-height:.88; margin:28px 0 10px; letter-spacing:-.04em; }
+  h1 span { color:var(--hot); }
+  .lead { max-width:68ch; color:var(--muted); margin:0 0 18px; }
+  .metrics, .desk { display:grid; gap:14px; }
+  .metrics { grid-template-columns:repeat(3,1fr); margin-bottom:14px; }
+  .desk { grid-template-columns:1fr 1.15fr; }
+  section { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:18px; }
+  .metric b { display:block; font-size:28px; margin-top:4px; }
+  label { display:block; margin:12px 0 6px; color:var(--muted); font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.08em; }
+  input { width:100%; border:1px solid var(--line); background:#0c1016; color:white; border-radius:12px; padding:12px; font:inherit; }
   button { font:inherit; border:0; border-radius:12px; padding:10px 14px; cursor:pointer; }
-  .orange { background:#ff5a1f; color:white; } .blue { background:#2f80ed; color:white; } .ghost { background:#1b212c; color:white; }
-  .tabs { display:flex; gap:8px; margin:18px 0; } .tabs button.on { background:white; color:#111; }
-  section { background:#181d27; border:1px solid rgba(255,255,255,.08); border-radius:18px; padding:18px; }
-  .board { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-  label { display:block; margin:12px 0 6px; color:#a7b0bd; font-family:"IBM Plex Mono", monospace; font-size:11px; letter-spacing:.08em; }
-  input { width:100%; box-sizing:border-box; border:1px solid rgba(255,255,255,.1); background:#10141c; color:white; border-radius:10px; padding:12px; font:inherit; }
-  .cards { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
-  .card b { display:block; font-size:28px; margin-top:4px; }
-  pre { white-space:pre-wrap; font-family:"IBM Plex Mono", monospace; font-size:12px; color:#d5dbe3; }
-  .hide { display:none; } .bad { color:#ff8d6a; }
-  @media (max-width:800px) { h1 { font-size:40px; } .board, .cards { grid-template-columns:1fr; } }
+  .hot { background:var(--hot); color:white; } .blue { background:#2f80ed; color:white; } .ghost { background:#222938; color:white; }
+  .head { display:flex; justify-content:space-between; gap:8px; align-items:center; }
+  .pill { border-radius:999px; padding:4px 8px; font-family:"IBM Plex Mono",monospace; font-size:11px; background:#243044; }
+  .SPLIT { background:#ff5a1f; } .REFUNDED { background:#1d3a2a; }
+  .pair { display:grid; grid-template-columns:1fr auto 1fr; gap:10px; margin-top:14px; }
+  .src { background:#0c1016; border-radius:14px; padding:12px; min-height:92px; }
+  .src b { display:block; font-size:28px; margin-top:6px; }
+  .mark { align-self:center; color:var(--hot); font-family:"IBM Plex Mono",monospace; }
+  pre { white-space:pre-wrap; font-family:"IBM Plex Mono",monospace; font-size:12px; color:#d5dbe3; }
+  @media (max-width:860px) { h1 { font-size:42px; } .desk, .metrics, .pair { grid-template-columns:1fr; } .mark { display:none; } }
 </style>
 </head>
 <body>
@@ -33,50 +42,45 @@
   <nav>
     <b>SPLITSIGNAL</b>
     <div class="row">
-      <span class="chip">STUDIONET</span>
-      <a class="chip" href="https://explorer-studio.genlayer.com/address/0x03EFaa8148120C025b29c9B09dE0CB0c4Fb7d46d">0x03EF…d46d</a>
+      <span class="chip mono">STUDIONET</span>
+      <a class="chip" href="https://studio.genlayer.com/?import-contract=0x07aeE113dD0248DB23BC0259ba1197D0cFC9e15b">0x07ae…e15b</a>
       <button id="connect" class="blue">Connect</button>
     </div>
   </nav>
-  <h1>TWO PAGES.<br><span>ONE SPLIT.</span></h1>
-  <p class="lead">Lock GEN on two https pages and one token. The account that catches them diverge is paid. A match does not move the bond. Refund is open after one hour.</p>
-  <div class="tabs">
-    <button class="on" data-tab="open">Open</button>
-    <button data-tab="watch">Watch</button>
-    <button data-tab="proof">Proof</button>
+  <h1>TWO PAGES.<br><span>ONE WINDOW.</span></h1>
+  <p class="lead">Deposit GEN, then lock a window only if two https pages agree. A finder who catches them diverge is paid. Five percent stays in the pool. After the window, an open bond returns to the funder.</p>
+  <div class="metrics">
+    <section class="metric"><span class="mono">POOL</span><b id="poolVal">—</b></section>
+    <section class="metric"><span class="mono">RESERVED</span><b id="reservedVal">—</b></section>
+    <section class="metric"><span class="mono">FREE</span><b id="freeVal">—</b></section>
   </div>
-  <div id="open" class="board">
+  <div class="desk">
     <section>
+      <label>DEPOSIT GEN</label><input id="dep" value="1" />
+      <div class="row"><button class="blue" id="deposit">deposit</button><button class="ghost" id="withdraw">withdraw</button><button class="ghost" id="refresh">get_pool</button></div>
       <label>LEFT</label><input id="left" value="https://example.org" />
-      <label>RIGHT</label><input id="right" value="https://info.cern.ch" />
+      <label>RIGHT</label><input id="right" value="https://www.iana.org" />
       <label>FIELD</label><input id="field" value="iana" />
-      <label>BOND GEN</label><input id="bond" value="1" />
-      <button class="orange" id="openWatch">open_watch</button>
-    </section>
-    <section>
-      <p>Validators render both pages and agree with strict_eq. This page does not score them.</p>
-      <p>SPLIT pays the caller once. AGREED keeps the bond until refund. An unreadable page does not pay.</p>
-    </section>
-  </div>
-  <div id="watch" class="hide">
-    <section>
-      <label>WATCH ID</label><input id="id" value="1" />
       <div class="row">
-        <button class="blue" id="read">get_watch</button>
-        <button class="orange" id="recheck">recheck</button>
-        <button class="ghost" id="refund">refund</button>
+        <div style="flex:1"><label>BOND GEN</label><input id="bond" value="1" /></div>
+        <div style="flex:1"><label>WINDOW HOURS</label><input id="hours" value="24" /></div>
       </div>
-      <div class="cards">
-        <div class="card">Left<b id="leftVal">—</b></div>
-        <div class="card">Right<b id="rightVal">—</b></div>
-      </div>
+      <div class="row" style="margin-top:14px"><button class="hot" id="openWatch">Lock window</button></div>
     </section>
-  </div>
-  <div id="proof" class="hide">
     <section>
-      <p>Watch 1 on the deployed contract: example.org yes, info.cern.ch no, field iana, status SPLIT.</p>
-      <button class="blue" id="loadProof">Read watch 1</button>
-      <p id="proofLine"></p>
+      <div class="head"><b id="title">No watch yet</b><span class="pill" id="pill">—</span></div>
+      <label>WATCH ID</label><input id="id" placeholder="next_watch minus 1" />
+      <div class="pair">
+        <div class="src">Left<b id="leftVal">—</b><span class="mono" id="leftUrl"></span></div>
+        <div class="mark" id="mark">=</div>
+        <div class="src">Right<b id="rightVal">—</b><span class="mono" id="rightUrl"></span></div>
+      </div>
+      <p class="mono" id="meta">Read a watch to see the frozen values.</p>
+      <div class="row">
+        <button class="blue" id="read">Read</button>
+        <button class="hot" id="recheck">Recheck</button>
+        <button class="ghost" id="refund">Refund</button>
+      </div>
     </section>
   </div>
   <pre id="out">Connect a Studionet wallet.</pre>
@@ -84,66 +88,67 @@
 <script type="module">
 import { createClient } from "https://esm.sh/genlayer-js@0.18.0?bundle";
 import { studionet } from "https://esm.sh/genlayer-js@0.18.0/chains?bundle";
-const CONTRACT = "0x03EFaa8148120C025b29c9B09dE0CB0c4Fb7d46d";
+const CONTRACT = "0x07aeE113dD0248DB23BC0259ba1197D0cFC9e15b";
 const ZERO = "0x0000000000000000000000000000000000000000";
 const out = document.querySelector("#out");
 let account = null, provider = null;
+const gen = (v) => (Number(v) / 1e18).toFixed(2) + " GEN";
 function show(v) { out.textContent = typeof v === "string" ? v : JSON.stringify(v, null, 2); }
-function readClient() {
-  return createClient({ chain: studionet, endpoint: "https://studio.genlayer.com/api", account: account || ZERO });
-}
-document.querySelectorAll(".tabs button").forEach((b) => b.onclick = () => {
-  document.querySelectorAll(".tabs button").forEach((x) => x.classList.remove("on"));
-  b.classList.add("on");
-  ["open","watch","proof"].forEach((id) => document.getElementById(id).classList.toggle("hide", id !== b.dataset.tab));
-});
+function readClient() { return createClient({ chain: studionet, endpoint: "https://studio.genlayer.com/api", account: account || ZERO }); }
 async function write(functionName, args, value = 0n) {
   if (!account) throw new Error("Connect first.");
-  const client = createClient({ chain: studionet, account, provider });
-  await client.connect("studionet");
+  const c = createClient({ chain: studionet, account, provider });
+  await c.connect("studionet");
   const call = { address: CONTRACT, functionName, args, value };
-  const estimate = await client.estimateTransactionFeesForWrite(call);
-  return client.writeContract({ ...call, fees: { distribution: estimate.distribution, feeValue: estimate.feeValue } });
+  const estimate = await c.estimateTransactionFeesForWrite(call);
+  return c.writeContract({ ...call, fees: { distribution: estimate.distribution, feeValue: estimate.feeValue } });
+}
+async function pool() {
+  const raw = await readClient().readContract({ address: CONTRACT, functionName: "get_pool", args: [], stateStatus: "accepted" });
+  const data = typeof raw === "string" ? JSON.parse(raw) : raw;
+  document.querySelector("#poolVal").textContent = gen(data.pool);
+  document.querySelector("#reservedVal").textContent = gen(data.reserved);
+  document.querySelector("#freeVal").textContent = gen(data.free);
+  return data;
 }
 async function watch(id) {
   const raw = await readClient().readContract({ address: CONTRACT, functionName: "get_watch", args: [String(id)], stateStatus: "accepted" });
   return typeof raw === "string" ? JSON.parse(raw) : raw;
 }
 function paint(rec) {
+  document.querySelector("#title").textContent = rec.id ? "Watch " + rec.id : "Watch";
+  document.querySelector("#pill").textContent = rec.status || "—";
+  document.querySelector("#pill").className = "pill " + (rec.status || "");
   document.querySelector("#leftVal").textContent = rec.left_value || "—";
   document.querySelector("#rightVal").textContent = rec.right_value || "—";
+  document.querySelector("#leftUrl").textContent = rec.left_url || "";
+  document.querySelector("#rightUrl").textContent = rec.right_url || "";
+  document.querySelector("#mark").textContent = rec.left_value && rec.right_value && rec.left_value !== rec.right_value ? "!=" : "=";
+  const end = rec.deadline ? new Date(rec.deadline * 1000).toLocaleString() : "—";
+  document.querySelector("#meta").textContent = (rec.field || "—") + " · " + (rec.amount ? gen(rec.amount) : "—") + " · until " + end + " · " + (rec.note || "");
 }
 document.querySelector("#connect").onclick = async () => {
   provider = window.ethereum;
   if (!provider) return show("No wallet.");
   account = (await provider.request({ method: "eth_requestAccounts" }))[0];
-  show("Connected " + account);
+  show(await pool().catch((e) => e.message || String(e)));
 };
+document.querySelector("#refresh").onclick = () => pool().then(show).catch((e) => show(e.message || String(e)));
+document.querySelector("#deposit").onclick = async () => { try { show(await write("deposit", [], BigInt(document.querySelector("#dep").value) * 10n ** 18n)); } catch (e) { show(e.message || String(e)); } };
+document.querySelector("#withdraw").onclick = async () => { try { show(await write("withdraw", [(BigInt(document.querySelector("#dep").value) * 10n ** 18n).toString()])); } catch (e) { show(e.message || String(e)); } };
 document.querySelector("#openWatch").onclick = async () => {
   try {
     const left = document.querySelector("#left").value.trim();
     const right = document.querySelector("#right").value.trim();
     const field = document.querySelector("#field").value.trim();
-    if (!left.startsWith("https://") || !right.startsWith("https://") || left === right) return show("Two different https URLs.");
-    if (field.length < 3 || field.length > 32) return show("Field must be 3-32 chars.");
-    const value = BigInt(document.querySelector("#bond").value) * 10n ** 18n;
-    if (value <= 0n) return show("Lock GEN.");
-    show(await write("open_watch", [left, right, field], value));
+    const hours = document.querySelector("#hours").value.trim();
+    const amount = (BigInt(document.querySelector("#bond").value) * 10n ** 18n).toString();
+    show(await write("open_watch", [left, right, field, hours, amount]));
   } catch (e) { show(e.message || String(e)); }
 };
 document.querySelector("#read").onclick = () => watch(document.querySelector("#id").value).then((rec) => { paint(rec); show(rec); }).catch((e) => show(e.message || String(e)));
 document.querySelector("#recheck").onclick = async () => { try { show(await write("recheck", [document.querySelector("#id").value])); } catch (e) { show(e.message || String(e)); } };
 document.querySelector("#refund").onclick = async () => { try { show(await write("refund", [document.querySelector("#id").value])); } catch (e) { show(e.message || String(e)); } };
-document.querySelector("#loadProof").onclick = async () => {
-  try {
-    const rec = await watch("1");
-    paint(rec);
-    const ok = rec.status === "SPLIT" && rec.left_value === "yes" && rec.right_value === "no" && rec.field === "iana";
-    document.querySelector("#proofLine").textContent = ok ? "PASS watch 1 is SPLIT yes/no" : "FAIL " + rec.status;
-    document.querySelector("#proofLine").className = ok ? "" : "bad";
-    show(rec);
-  } catch (e) { show(e.message || String(e)); }
-};
 </script>
 </body>
 </html>
