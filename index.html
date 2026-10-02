@@ -4,37 +4,36 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>SplitSignal</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Schibsted+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif&family=Schibsted+Grotesk:wght@500;600&display=swap" rel="stylesheet" />
 <style>
-  :root { --bg:#0c1016; --card:#161c27; --line:rgba(255,255,255,.08); --muted:#9aa3b2; --ink:#f5f7fa; --hot:#ff5a1f; }
+  :root { --bg:#090b10; --card:#121722; --line:rgba(255,255,255,.08); --muted:#8d97a8; --ink:#f4f6f8; --hot:#ff4d1c; }
   * { box-sizing:border-box; }
-  body { margin:0; background:var(--bg); color:var(--ink); font-family:"Schibsted Grotesk",sans-serif; }
-  main { max-width:1080px; margin:0 auto; padding:22px 20px 72px; }
-  nav, .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  body { margin:0; background:radial-gradient(900px 420px at 80% -10%, rgba(255,77,28,.16), transparent 60%), var(--bg); color:var(--ink); font-family:"Schibsted Grotesk",sans-serif; }
+  main { max-width:1120px; margin:0 auto; padding:28px 22px 80px; }
+  nav, .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
   nav { justify-content:space-between; }
   a, .mono { color:var(--muted); font-family:"IBM Plex Mono",monospace; font-size:12px; text-decoration:none; }
-  .chip { border:1px solid var(--line); border-radius:999px; padding:7px 10px; }
-  h1 { font-size:64px; line-height:.88; margin:28px 0 10px; letter-spacing:-.04em; }
-  h1 span { color:var(--hot); }
-  .lead { max-width:68ch; color:var(--muted); margin:0 0 18px; }
-  .metrics, .desk { display:grid; gap:14px; }
-  .metrics { grid-template-columns:repeat(3,1fr); margin-bottom:14px; }
-  .desk { grid-template-columns:1fr 1.15fr; }
-  section { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:18px; }
-  .metric b { display:block; font-size:28px; margin-top:4px; }
-  label { display:block; margin:12px 0 6px; color:var(--muted); font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.08em; }
-  input { width:100%; border:1px solid var(--line); background:#0c1016; color:white; border-radius:12px; padding:12px; font:inherit; }
-  button { font:inherit; border:0; border-radius:12px; padding:10px 14px; cursor:pointer; }
-  .hot { background:var(--hot); color:white; } .blue { background:#2f80ed; color:white; } .ghost { background:#222938; color:white; }
-  .head { display:flex; justify-content:space-between; gap:8px; align-items:center; }
-  .pill { border-radius:999px; padding:4px 8px; font-family:"IBM Plex Mono",monospace; font-size:11px; background:#243044; }
-  .SPLIT { background:#ff5a1f; } .REFUNDED { background:#1d3a2a; }
-  .pair { display:grid; grid-template-columns:1fr auto 1fr; gap:10px; margin-top:14px; }
-  .src { background:#0c1016; border-radius:14px; padding:12px; min-height:92px; }
-  .src b { display:block; font-size:28px; margin-top:6px; }
-  .mark { align-self:center; color:var(--hot); font-family:"IBM Plex Mono",monospace; }
-  pre { white-space:pre-wrap; font-family:"IBM Plex Mono",monospace; font-size:12px; color:#d5dbe3; }
-  @media (max-width:860px) { h1 { font-size:42px; } .desk, .metrics, .pair { grid-template-columns:1fr; } .mark { display:none; } }
+  .chip { border:1px solid var(--line); border-radius:999px; padding:8px 12px; background:rgba(255,255,255,.03); }
+  h1 { font-family:"Instrument Serif",serif; font-size:84px; font-weight:400; line-height:.86; margin:34px 0 12px; letter-spacing:-.03em; }
+  h1 em { font-style:italic; color:var(--hot); }
+  .lead { max-width:640px; color:#c5ccd6; font-size:18px; line-height:1.45; }
+  .strip { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:18px; overflow:hidden; margin:28px 0; }
+  .strip div { background:#10151e; padding:16px 18px; }
+  .strip b { display:block; font-size:32px; margin-top:4px; }
+  .desk { display:grid; grid-template-columns:.9fr 1.1fr; gap:16px; }
+  section { background:rgba(18,23,34,.92); border:1px solid var(--line); border-radius:24px; padding:20px; }
+  label { display:block; margin:14px 0 6px; color:var(--muted); font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.12em; }
+  input { width:100%; border:1px solid var(--line); background:#090b10; color:white; border-radius:14px; padding:13px 14px; font:inherit; }
+  button { font:inherit; border:0; border-radius:999px; padding:11px 16px; cursor:pointer; }
+  .hot { background:var(--hot); color:white; } .blue { background:#dfe7f2; color:#111; } .ghost { background:transparent; color:white; border:1px solid var(--line); }
+  .head { display:flex; justify-content:space-between; align-items:end; }
+  .pill { font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.08em; }
+  .pair { display:grid; grid-template-columns:1fr 72px 1fr; gap:8px; margin:18px 0; }
+  .src { background:#090b10; border-radius:18px; padding:16px; min-height:120px; }
+  .src b { display:block; font-size:40px; margin:8px 0; }
+  .mark { display:grid; place-items:center; color:var(--hot); font-size:28px; }
+  pre { margin-top:18px; white-space:pre-wrap; font-family:"IBM Plex Mono",monospace; font-size:12px; color:#d5dbe3; }
+  @media (max-width:860px) { h1 { font-size:52px; } .desk, .strip, .pair { grid-template-columns:1fr; } .mark { display:none; } }
 </style>
 </head>
 <body>
@@ -47,40 +46,36 @@
       <button id="connect" class="blue">Connect</button>
     </div>
   </nav>
-  <h1>TWO PAGES.<br><span>ONE WINDOW.</span></h1>
-  <p class="lead">Deposit GEN, then lock a window only if two https pages agree. A finder who catches them diverge is paid. Five percent stays in the pool. After the window, an open bond returns to the funder.</p>
-  <div class="metrics">
-    <section class="metric"><span class="mono">POOL</span><b id="poolVal">—</b></section>
-    <section class="metric"><span class="mono">RESERVED</span><b id="reservedVal">—</b></section>
-    <section class="metric"><span class="mono">FREE</span><b id="freeVal">—</b></section>
+  <h1>Two pages.<br><em>One window.</em></h1>
+  <p class="lead">Lock GEN only while two public pages agree. The account that catches the split is paid. Five percent stays with the pool. An open bond comes home after the window.</p>
+  <div class="strip">
+    <div><span class="mono">POOL</span><b id="poolVal">—</b></div>
+    <div><span class="mono">RESERVED</span><b id="reservedVal">—</b></div>
+    <div><span class="mono">FREE</span><b id="freeVal">—</b></div>
   </div>
   <div class="desk">
     <section>
       <label>DEPOSIT GEN</label><input id="dep" value="1" />
-      <div class="row"><button class="blue" id="deposit">deposit</button><button class="ghost" id="withdraw">withdraw</button><button class="ghost" id="refresh">get_pool</button></div>
+      <div class="row"><button class="blue" id="deposit">Deposit</button><button class="ghost" id="withdraw">Withdraw</button><button class="ghost" id="refresh">Refresh</button></div>
       <label>LEFT</label><input id="left" value="https://example.org" />
       <label>RIGHT</label><input id="right" value="https://www.iana.org" />
       <label>FIELD</label><input id="field" value="iana" />
       <div class="row">
         <div style="flex:1"><label>BOND GEN</label><input id="bond" value="1" /></div>
-        <div style="flex:1"><label>WINDOW HOURS</label><input id="hours" value="24" /></div>
+        <div style="flex:1"><label>HOURS</label><input id="hours" value="24" /></div>
       </div>
-      <div class="row" style="margin-top:14px"><button class="hot" id="openWatch">Lock window</button></div>
+      <div class="row" style="margin-top:16px"><button class="hot" id="openWatch">Lock window</button></div>
     </section>
     <section>
-      <div class="head"><b id="title">No watch yet</b><span class="pill" id="pill">—</span></div>
-      <label>WATCH ID</label><input id="id" placeholder="next_watch minus 1" />
+      <div class="head"><div><span class="mono">WATCH</span><h2 id="title" style="margin:4px 0">Nothing open</h2></div><span class="pill" id="pill">—</span></div>
+      <label>WATCH ID</label><input id="id" placeholder="1" />
       <div class="pair">
-        <div class="src">Left<b id="leftVal">—</b><span class="mono" id="leftUrl"></span></div>
+        <div class="src"><span class="mono">LEFT</span><b id="leftVal">—</b><span class="mono" id="leftUrl"></span></div>
         <div class="mark" id="mark">=</div>
-        <div class="src">Right<b id="rightVal">—</b><span class="mono" id="rightUrl"></span></div>
+        <div class="src"><span class="mono">RIGHT</span><b id="rightVal">—</b><span class="mono" id="rightUrl"></span></div>
       </div>
-      <p class="mono" id="meta">Read a watch to see the frozen values.</p>
-      <div class="row">
-        <button class="blue" id="read">Read</button>
-        <button class="hot" id="recheck">Recheck</button>
-        <button class="ghost" id="refund">Refund</button>
-      </div>
+      <p class="mono" id="meta">Frozen values appear after a read.</p>
+      <div class="row"><button class="blue" id="read">Read</button><button class="hot" id="recheck">Recheck</button><button class="ghost" id="refund">Refund</button></div>
     </section>
   </div>
   <pre id="out">Connect a Studionet wallet.</pre>
@@ -116,12 +111,11 @@ async function watch(id) {
 function paint(rec) {
   document.querySelector("#title").textContent = rec.id ? "Watch " + rec.id : "Watch";
   document.querySelector("#pill").textContent = rec.status || "—";
-  document.querySelector("#pill").className = "pill " + (rec.status || "");
   document.querySelector("#leftVal").textContent = rec.left_value || "—";
   document.querySelector("#rightVal").textContent = rec.right_value || "—";
   document.querySelector("#leftUrl").textContent = rec.left_url || "";
   document.querySelector("#rightUrl").textContent = rec.right_url || "";
-  document.querySelector("#mark").textContent = rec.left_value && rec.right_value && rec.left_value !== rec.right_value ? "!=" : "=";
+  document.querySelector("#mark").textContent = rec.left_value && rec.right_value && rec.left_value !== rec.right_value ? "≠" : "=";
   const end = rec.deadline ? new Date(rec.deadline * 1000).toLocaleString() : "—";
   document.querySelector("#meta").textContent = (rec.field || "—") + " · " + (rec.amount ? gen(rec.amount) : "—") + " · until " + end + " · " + (rec.note || "");
 }
@@ -136,12 +130,8 @@ document.querySelector("#deposit").onclick = async () => { try { show(await writ
 document.querySelector("#withdraw").onclick = async () => { try { show(await write("withdraw", [(BigInt(document.querySelector("#dep").value) * 10n ** 18n).toString()])); } catch (e) { show(e.message || String(e)); } };
 document.querySelector("#openWatch").onclick = async () => {
   try {
-    const left = document.querySelector("#left").value.trim();
-    const right = document.querySelector("#right").value.trim();
-    const field = document.querySelector("#field").value.trim();
-    const hours = document.querySelector("#hours").value.trim();
     const amount = (BigInt(document.querySelector("#bond").value) * 10n ** 18n).toString();
-    show(await write("open_watch", [left, right, field, hours, amount]));
+    show(await write("open_watch", [document.querySelector("#left").value.trim(), document.querySelector("#right").value.trim(), document.querySelector("#field").value.trim(), document.querySelector("#hours").value.trim(), amount]));
   } catch (e) { show(e.message || String(e)); }
 };
 document.querySelector("#read").onclick = () => watch(document.querySelector("#id").value).then((rec) => { paint(rec); show(rec); }).catch((e) => show(e.message || String(e)));
