@@ -89,10 +89,13 @@ const gen = (v) => (Number(v) / 1e18).toFixed(2) + " GEN";
 function show(v) { out.textContent = typeof v === "string" ? v : JSON.stringify(v, null, 2); }
 function readClient() { return createClient({ chain: studionet, endpoint: "https://studio.genlayer.com/api", account: account || ZERO }); }
 async function write(functionName, args, value = 0n) {
-  if (!account) throw new Error("Connect first.");
+  if (!account) throw new Error("REJECTED: connect first");
+  show("SUBMITTING " + functionName);
   const c = createClient({ chain: studionet, account, provider });
   await c.connect("studionet");
-  return c.writeContract({ address: CONTRACT, functionName, args, value });
+  const tx = await c.writeContract({ address: CONTRACT, functionName, args, value });
+  show("SUBMITTED " + functionName + "\n" + (typeof tx === "string" ? tx : JSON.stringify(tx, null, 2)));
+  return tx;
 }
 async function pool() {
   const raw = await readClient().readContract({ address: CONTRACT, functionName: "get_pool", args: [], stateStatus: "accepted" });
@@ -121,6 +124,8 @@ document.querySelector("#connect").onclick = async () => {
   provider = window.ethereum;
   if (!provider) return show("No wallet.");
   account = (await provider.request({ method: "eth_requestAccounts" }))[0];
+  document.querySelector("#connect").textContent = account.slice(0, 6) + "…" + account.slice(-4);
+  show("CONNECTED " + account);
   show(await pool().catch((e) => e.message || String(e)));
 };
 document.querySelector("#refresh").onclick = () => pool().then(show).catch((e) => show(e.message || String(e)));
