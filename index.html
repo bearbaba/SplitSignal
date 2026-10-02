@@ -62,8 +62,8 @@
       <div class="card"><span class="mono">FREE</span><b id="freeVal">—</b></div>
     </div>
     <section style="margin-top:14px">
-      <div class="row" style="justify-content:space-between"><b>Latest watch</b><span class="pill" id="dashPill">—</span></div>
-      <p class="mono" id="dashMeta">Read watch 1 after connecting.</p>
+      <div class="row" style="justify-content:space-between"><b>Watch 1</b><span class="pill" id="dashPill">—</span></div>
+      <p class="mono" id="dashMeta">Connect, then read.</p>
       <button id="dashRead" class="fill">Read watch 1</button>
     </section>
   </div>
@@ -78,7 +78,7 @@
       </div>
       <div class="row" style="margin-top:14px"><button id="openWatch" class="hot">Lock window</button></div>
     </section>
-    <section><p>Both pages must agree at open. A pair that already differs is rejected and does not reserve GEN.</p></section>
+    <section><p>Both pages must agree. A pair that already differs reverts and does not reserve GEN.</p></section>
   </div>
   <div id="watch" class="hide">
     <section>
@@ -97,7 +97,7 @@
     <section>
       <label>AMOUNT GEN</label><input id="dep" value="1" />
       <div class="row"><button id="deposit" class="fill">Deposit</button><button id="withdraw">Withdraw</button><button id="refresh">Refresh</button></div>
-      <p class="mono">Free can be withdrawn. Reserved is locked on open watches.</p>
+      <p class="mono">Free can be withdrawn. Reserved stays locked until split or refund.</p>
     </section>
   </div>
   <pre id="out">Connect a Studionet wallet.</pre>
@@ -147,11 +147,11 @@ function paint(rec) {
   document.querySelector("#rightVal").textContent = rec.right_value || "—";
   document.querySelector("#leftUrl").textContent = rec.left_url || "";
   document.querySelector("#rightUrl").textContent = rec.right_url || "";
-  document.querySelector("#mark").textContent = rec.left_value && rec.right_value && rec.left_value !== rec.right_value ? "≠" : "=";
+  document.querySelector("#mark").textContent = rec.left_value && rec.right_value && rec.left_value !== rec.right_value ? "!=" : "=";
   const end = rec.deadline ? new Date(rec.deadline * 1000).toLocaleString() : "—";
   const meta = (rec.field || "—") + " · " + (rec.amount ? gen(rec.amount) : "—") + " · until " + end + " · " + (rec.note || "");
   document.querySelector("#meta").textContent = meta;
-  document.querySelector("#dashMeta").textContent = "Watch " + (rec.id || "1") + " · " + meta;
+  document.querySelector("#dashMeta").textContent = meta;
 }
 document.querySelector("#connect").onclick = async () => {
   try {
@@ -165,19 +165,19 @@ document.querySelector("#connect").onclick = async () => {
   } catch (e) { show("REJECTED: " + (e.message || String(e))); }
 };
 document.querySelector("#refresh").onclick = () => pool().then(show).catch((e) => show("REJECTED: " + (e.message || String(e))));
-document.querySelector("#deposit").onclick = async () => { try { show(await write("deposit", [], BigInt(document.querySelector("#dep").value) * 10n ** 18n)); } catch (e) { show("REJECTED: " + (e.message || String(e))); } };
-document.querySelector("#withdraw").onclick = async () => { try { show(await write("withdraw", [(BigInt(document.querySelector("#dep").value) * 10n ** 18n).toString()])); } catch (e) { show("REJECTED: " + (e.message || String(e))); } };
+document.querySelector("#deposit").onclick = async () => { try { await write("deposit", [], BigInt(document.querySelector("#dep").value) * 10n ** 18n); } catch (e) { show("REJECTED: " + (e.message || String(e))); } };
+document.querySelector("#withdraw").onclick = async () => { try { await write("withdraw", [(BigInt(document.querySelector("#dep").value) * 10n ** 18n).toString()]); } catch (e) { show("REJECTED: " + (e.message || String(e))); } };
 document.querySelector("#openWatch").onclick = async () => {
   try {
     const amount = (BigInt(document.querySelector("#bond").value) * 10n ** 18n).toString();
-    show(await write("open_watch", [document.querySelector("#left").value.trim(), document.querySelector("#right").value.trim(), document.querySelector("#field").value.trim(), document.querySelector("#hours").value.trim(), amount]));
+    await write("open_watch", [document.querySelector("#left").value.trim(), document.querySelector("#right").value.trim(), document.querySelector("#field").value.trim(), document.querySelector("#hours").value.trim(), amount]);
   } catch (e) { show("REJECTED: " + (e.message || String(e))); }
 };
 async function readWatch() { const rec = await watch(document.querySelector("#id").value); paint(rec); show(rec); }
 document.querySelector("#read").onclick = () => readWatch().catch((e) => show("REJECTED: " + (e.message || String(e))));
 document.querySelector("#dashRead").onclick = () => { document.querySelector("#id").value = "1"; readWatch().catch((e) => show("REJECTED: " + (e.message || String(e)))); };
-document.querySelector("#recheck").onclick = async () => { try { show(await write("recheck", [document.querySelector("#id").value])); } catch (e) { show("REJECTED: " + (e.message || String(e))); } };
-document.querySelector("#refund").onclick = async () => { try { show(await write("refund", [document.querySelector("#id").value])); } catch (e) { show("REJECTED: " + (e.message || String(e))); } };
+document.querySelector("#recheck").onclick = async () => { try { await write("recheck", [document.querySelector("#id").value]); } catch (e) { show("REJECTED: " + (e.message || String(e))); } };
+document.querySelector("#refund").onclick = async () => { try { await write("refund", [document.querySelector("#id").value]); } catch (e) { show("REJECTED: " + (e.message || String(e))); } };
 </script>
 </body>
 </html>
