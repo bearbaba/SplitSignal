@@ -49,7 +49,7 @@
     </div>
   </nav>
   <h1>Two pages.<br><i>One window.</i></h1>
-  <p class="mono">Lock GEN while two pages agree. Recheck pays if they diverge before the deadline. Refund pays after it.</p>
+  <p class="mono">Lock GEN while two pages contain the same token. Recheck pays 95 percent if they differ before the deadline. Refund pays after it.</p>
   <div class="row" style="margin-top:18px"><button id="tabDesk" class="fill">Desk</button><button id="tabDocs">Docs</button></div>
 <div id="docs" style="display:none">
   <div class="docs">
@@ -65,7 +65,7 @@
       <section id="open"><span class="mono">02</span><h2>Open</h2><p>A window opens only when both pages agree. A pair that already differs is rejected. The bond stays with the sender.</p></section>
       <section id="pay"><span class="mono">03</span><h2>Pay</h2><p>Recheck can pay only before the deadline. If the pages differ, the caller receives 95 percent. Five percent goes to the deployer. Watch 4 did this: left yes, right no, status SPLIT.</p></section>
       <section id="exit"><span class="mono">04</span><h2>Exit</h2><p>Refund can pay only after the deadline, and only while the watch is open. Watches 1 and 2 returned the bond to the funder.</p></section>
-      <section id="limit"><span class="mono">05</span><h2>Limit</h2><p>The field check is token presence in the rendered page, not a value cut from a selector. The lit step on the desk is the only action that watch allows.</p></section>
+      <section id="limit"><span class="mono">05</span><h2>Limit</h2><p>The check is token presence, not a value cut from the page. Watch 4 paid the same account that opened it. A second account has not caught a split.</p></section>
     </article>
   </div>
 </div>
