@@ -36,7 +36,7 @@
   #guide { min-height:4.5em; }
   pre { white-space:pre-wrap; font-size:12px; color:#ddd6c6; }
   @media (max-width:800px) { h1 { font-size:42px; } .steps, .desk, .stage { grid-template-columns:1fr; } .mark { display:none; } }
-</style>
+.docs { display:grid; grid-template-columns:140px 1fr; gap:28px; margin-top:28px; } .docs aside { position:sticky; top:20px; align-self:start; display:grid; gap:10px; } .docs h2 { font-size:40px; font-weight:500; margin:6px 0; } .docs section { border:0; background:transparent; padding:0 0 48px; } </style>
 </head>
 <body>
 <main>
@@ -52,13 +52,22 @@
   <p class="mono">Lock GEN while two pages agree. Recheck pays if they diverge before the deadline. Refund pays after it.</p>
   <div class="row" style="margin-top:18px"><button id="tabDesk" class="fill">Desk</button><button id="tabDocs">Docs</button></div>
 <div id="docs" style="display:none">
-  <section>
-    <p>SplitSignal locks GEN on two https pages and one field. The deployed contract is 0x9643A50a9645A3CF90CDC188b44f71Ec07C141b6.</p>
-    <p>Lock sends the bond with the transaction. The window opens only when both pages agree. A pair that already differs is rejected and the bond is not taken.</p>
-    <p>Recheck is valid only before the deadline. If the pages still agree, the watch stays open. If they differ, the caller receives 95 percent and 5 percent goes to the deployer. Watch 4 is that case: left yes, right no, status SPLIT.</p>
-    <p>Refund is valid only after the deadline, and only while the watch is open. Watches 1 and 2 returned the bond to the funder.</p>
-    <p>The field check is token presence, not a value extracted from the page. The lit step on the desk is the action the current watch allows.</p>
-  </section>
+  <div class="docs">
+    <aside>
+      <a href="#law">Law</a>
+      <a href="#open">Open</a>
+      <a href="#pay">Pay</a>
+      <a href="#exit">Exit</a>
+      <a href="#limit">Limit</a>
+    </aside>
+    <article>
+      <section id="law"><span class="mono">01</span><h2>The law</h2><p>Two https pages and one field. GEN travels with the lock. The contract is 0x9643A50a9645A3CF90CDC188b44f71Ec07C141b6 on Studionet.</p></section>
+      <section id="open"><span class="mono">02</span><h2>Open</h2><p>A window opens only when both pages agree. A pair that already differs is rejected. The bond stays with the sender.</p></section>
+      <section id="pay"><span class="mono">03</span><h2>Pay</h2><p>Recheck can pay only before the deadline. If the pages differ, the caller receives 95 percent. Five percent goes to the deployer. Watch 4 did this: left yes, right no, status SPLIT.</p></section>
+      <section id="exit"><span class="mono">04</span><h2>Exit</h2><p>Refund can pay only after the deadline, and only while the watch is open. Watches 1 and 2 returned the bond to the funder.</p></section>
+      <section id="limit"><span class="mono">05</span><h2>Limit</h2><p>The field check is token presence in the rendered page, not a value cut from a selector. The lit step on the desk is the only action that watch allows.</p></section>
+    </article>
+  </div>
 </div>
 <div id="deskWrap"><div class="steps">
     <div class="step" id="s1"><b>1 Connect</b><span>A Studio wallet.</span></div>
