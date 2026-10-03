@@ -130,7 +130,7 @@ async function board() {
   const next = Number(raw);
   const rows = [];
   for (let i = 1; i < next; i++) rows.push(await watch(String(i)));
-  if (rows[0]) paint(rows[0]);
+  const latest = rows[rows.length - 1]; if (latest) { document.querySelector('#id').value = latest.id; paint(latest); }
   show(rows.length ? rows : "No watch yet. Next id " + next);
 }
 document.querySelector("#connect").onclick = async () => {
