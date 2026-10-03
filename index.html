@@ -8,7 +8,7 @@
 <style>
   :root { --bg:#12110e; --card:#1c1a16; --line:rgba(244,236,220,.12); --muted:#b7b1a4; --ink:#f7f1e6; --hot:#e85d04; }
   * { box-sizing:border-box; }
-  body { margin:0; background:var(--bg); color:var(--ink); font-family:Newsreader,serif; }
+  html { scroll-behavior:smooth; } body { margin:0; background:var(--bg); color:var(--ink); font-family:Newsreader,serif; }
   main { max-width:980px; margin:0 auto; padding:28px 20px 80px; }
   nav, .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
   nav { justify-content:space-between; }
@@ -50,7 +50,17 @@
   </nav>
   <h1>Two pages.<br><i>One window.</i></h1>
   <p class="mono">Lock GEN while two pages agree. Recheck pays if they diverge before the deadline. Refund pays after it.</p>
-  <div class="steps">
+  <div class="row" style="margin-top:18px"><button id="tabDesk" class="fill">Desk</button><button id="tabDocs">Docs</button></div>
+<div id="docs" style="display:none">
+  <section>
+    <p>SplitSignal locks GEN on two https pages and one field. The deployed contract is 0x9643A50a9645A3CF90CDC188b44f71Ec07C141b6.</p>
+    <p>Lock sends the bond with the transaction. The window opens only when both pages agree. A pair that already differs is rejected and the bond is not taken.</p>
+    <p>Recheck is valid only before the deadline. If the pages still agree, the watch stays open. If they differ, the caller receives 95 percent and 5 percent goes to the deployer. Watch 4 is that case: left yes, right no, status SPLIT.</p>
+    <p>Refund is valid only after the deadline, and only while the watch is open. Watches 1 and 2 returned the bond to the funder.</p>
+    <p>The field check is token presence, not a value extracted from the page. The lit step on the desk is the action the current watch allows.</p>
+  </section>
+</div>
+<div id="deskWrap"><div class="steps">
     <div class="step" id="s1"><b>1 Connect</b><span>A Studio wallet.</span></div>
     <div class="step" id="s2"><b>2 Lock</b><span>Only if both pages agree.</span></div>
     <div class="step" id="s3"><b>3 Recheck</b><span>Pays 95% on a split.</span></div>
@@ -85,7 +95,7 @@
     </div>
   </section>
   <details id="log"><summary class="mono">Receipt</summary><pre id="out">Connect a Studio wallet.</pre></details>
-</main>
+</div></main>
 <script type="module">
 import { createClient } from "https://esm.sh/genlayer-js@0.18.0?bundle";
 import { studionet } from "https://esm.sh/genlayer-js@0.18.0/chains?bundle";
@@ -166,6 +176,8 @@ document.querySelector("#openWatch").onclick = async () => {
 };
 document.querySelector("#recheck").onclick = async () => { try { await write("recheck", [document.querySelector("#id").value]); } catch (e) { show(e.message || String(e)); } };
 document.querySelector("#refund").onclick = async () => { try { await write("refund", [document.querySelector("#id").value]); } catch (e) { show(e.message || String(e)); } };
+document.querySelector("#tabDocs").onclick = () => { document.querySelector("#docs").style.display = "block"; document.querySelector("#deskWrap").style.display = "none"; };
+document.querySelector("#tabDesk").onclick = () => { document.querySelector("#docs").style.display = "none"; document.querySelector("#deskWrap").style.display = "block"; };
 paint(null);
 </script>
 </body>
