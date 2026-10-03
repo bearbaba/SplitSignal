@@ -6,34 +6,36 @@
 <title>SplitSignal</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,500&display=swap" rel="stylesheet" />
 <style>
-  :root { --bg:#12110e; --card:#1d1b16; --line:rgba(244,236,220,.12); --muted:#b7b1a4; --ink:#f7f1e6; --hot:#e85d04; }
+  :root { --bg:#12110e; --card:#1c1a16; --line:rgba(244,236,220,.12); --muted:#b7b1a4; --ink:#f7f1e6; --hot:#e85d04; }
   * { box-sizing:border-box; }
   body { margin:0; background:var(--bg); color:var(--ink); font-family:Newsreader,serif; }
-  main { max-width:1040px; margin:0 auto; padding:24px 20px 72px; }
-  nav, .row, .tabs { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  main { max-width:980px; margin:0 auto; padding:28px 20px 80px; }
+  nav, .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
   nav { justify-content:space-between; }
   a, .mono, button { font-family:"IBM Plex Mono",monospace; }
   a, .mono { color:var(--muted); font-size:12px; text-decoration:none; }
   .chip { border:1px solid var(--line); border-radius:999px; padding:8px 12px; }
-  h1 { font-size:68px; font-weight:500; line-height:.88; margin:26px 0 8px; }
+  h1 { font-size:64px; font-weight:500; line-height:.9; margin:28px 0 8px; }
   h1 i { color:var(--hot); }
-  .tabs { margin:20px 0; }
-  .tabs button.on { background:var(--ink); color:#17140f; }
-  .pane { display:none; }
-  .pane.on { display:block; }
-  .desk { display:grid; grid-template-columns:1.3fr .7fr; gap:12px; }
+  .steps { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:22px 0; }
+  .step { border:1px solid var(--line); border-radius:16px; padding:12px; color:var(--muted); transition:.2s transform,.2s border-color; }
+  .step.on { border-color:var(--hot); color:var(--ink); transform:translateY(-2px); }
+  .step b { display:block; color:var(--ink); margin-bottom:4px; }
+  .desk { display:grid; grid-template-columns:1.4fr .8fr; gap:12px; }
   section { background:var(--card); border:1px solid var(--line); border-radius:22px; padding:18px; }
   .stage { min-height:220px; display:grid; grid-template-columns:1fr auto 1fr; gap:12px; align-items:center; }
-  .side b { display:block; font-size:64px; margin:8px 0; }
-  .mark { font-size:32px; color:var(--hot); }
+  .side b { display:block; font-size:64px; margin:8px 0; transition:.2s opacity; }
+  .mark { font-size:28px; color:var(--hot); }
   label { display:block; margin:12px 0 6px; color:var(--muted); font-size:11px; letter-spacing:.12em; }
-  input { width:100%; border:0; border-bottom:1px solid var(--line); background:transparent; color:white; padding:10px 0; font:20px Newsreader,serif; }
+  input { width:100%; border:0; border-bottom:1px solid var(--line); background:transparent; color:white; padding:10px 0; font:18px Newsreader,serif; }
   button { border:1px solid var(--line); background:transparent; color:white; border-radius:999px; padding:10px 14px; cursor:pointer; }
+  button:disabled { opacity:.35; cursor:default; }
   .hot { background:var(--hot); border-color:var(--hot); } .fill { background:var(--ink); color:#17140f; }
   .pill { border-radius:999px; padding:4px 8px; background:#2c291f; }
-  .OPEN { background:#243224; } .SPLIT { background:var(--hot); }
+  .OPEN { background:#243224; } .SPLIT { background:var(--hot); } .REFUNDED { background:#3a3428; }
+  #guide { min-height:4.5em; }
   pre { white-space:pre-wrap; font-size:12px; color:#ddd6c6; }
-  @media (max-width:800px) { h1 { font-size:44px; } .desk, .stage { grid-template-columns:1fr; } .mark { display:none; } }
+  @media (max-width:800px) { h1 { font-size:42px; } .steps, .desk, .stage { grid-template-columns:1fr; } .mark { display:none; } }
 </style>
 </head>
 <body>
@@ -47,39 +49,40 @@
     </div>
   </nav>
   <h1>Two pages.<br><i>One window.</i></h1>
-  <p class="mono">The bond is sent with the lock. Recheck can pay only before the deadline. Refund can pay only after it.</p>
-  <div class="tabs">
-    <button class="on" data-tab="dash">Dashboard</button>
-    <button data-tab="open">Open</button>
-    <button data-tab="watch">Watch</button>
+  <p class="mono">Lock GEN while two pages agree. Recheck pays if they diverge before the deadline. Refund pays after it.</p>
+  <div class="steps">
+    <div class="step" id="s1"><b>1 Connect</b><span>A Studio wallet.</span></div>
+    <div class="step" id="s2"><b>2 Lock</b><span>Only if both pages agree.</span></div>
+    <div class="step" id="s3"><b>3 Recheck</b><span>Pays 95% on a split.</span></div>
+    <div class="step" id="s4"><b>4 Refund</b><span>After the deadline.</span></div>
   </div>
-  <section id="dash" class="pane on">
-    <div class="desk">
-      <div class="stage">
-        <div class="side"><span class="mono">LEFT</span><b id="leftVal">—</b><span class="mono" id="leftUrl"></span></div>
-        <div class="mark" id="mark">=</div>
-        <div class="side"><span class="mono">RIGHT</span><b id="rightVal">—</b><span class="mono" id="rightUrl"></span></div>
-      </div>
-      <div>
-        <div class="row" style="justify-content:space-between"><b id="title">No open watch</b><span class="pill" id="pill">—</span></div>
-        <p class="mono" id="meta">No watch has been opened.</p>
-        <button id="dashRead" class="fill">Refresh</button>
-      </div>
-    </div>
-  </section>
-  <section id="open" class="pane">
-    <label>LEFT</label><input id="left" value="https://www.iana.org/domains/reserved" />
-    <label>RIGHT</label><input id="right" value="https://www.iana.org/domains" />
+  <div class="desk">
+    <section class="stage">
+      <div class="side"><span class="mono">LEFT</span><b id="leftVal">—</b><span class="mono" id="leftUrl"></span></div>
+      <div class="mark" id="mark">=</div>
+      <div class="side"><span class="mono">RIGHT</span><b id="rightVal">—</b><span class="mono" id="rightUrl"></span></div>
+    </section>
+    <section>
+      <div class="row" style="justify-content:space-between"><b id="title">No watch</b><span class="pill" id="pill">—</span></div>
+      <p class="mono" id="meta">Refresh after connecting.</p>
+      <p id="guide">Connect, then refresh. The lit step is the one you can do.</p>
+      <button id="refresh" class="fill">Refresh</button>
+    </section>
+  </div>
+  <section style="margin-top:12px">
+    <label>LEFT</label><input id="left" value="https://splitsignal-ten.vercel.app/left.html" />
+    <label>RIGHT</label><input id="right" value="https://splitsignal-ten.vercel.app/right.html" />
     <label>FIELD</label><input id="field" value="iana" />
     <div class="row">
       <div style="flex:1"><label>BOND GEN</label><input id="bond" value="0.1" /></div>
       <div style="flex:1"><label>HOURS</label><input id="hours" value="1" /></div>
+      <div style="flex:1"><label>WATCH ID</label><input id="id" value="4" /></div>
     </div>
-    <div class="row" style="margin-top:16px"><button id="openWatch" class="hot">Lock</button></div>
-  </section>
-  <section id="watch" class="pane">
-    <label>WATCH ID</label><input id="id" value="1" />
-    <div class="row" style="margin-top:16px"><button id="read" class="fill">Read</button><button id="recheck" class="hot">Recheck</button><button id="refund">Refund</button></div>
+    <div class="row" style="margin-top:16px">
+      <button id="openWatch" class="hot" disabled>Lock</button>
+      <button id="recheck" class="hot" disabled>Recheck</button>
+      <button id="refund" disabled>Refund</button>
+    </div>
   </section>
   <details id="log"><summary class="mono">Receipt</summary><pre id="out">Connect a Studio wallet.</pre></details>
 </main>
@@ -89,16 +92,14 @@ import { studionet } from "https://esm.sh/genlayer-js@0.18.0/chains?bundle";
 const CONTRACT = "0x9643A50a9645A3CF90CDC188b44f71Ec07C141b6";
 const ZERO = "0x0000000000000000000000000000000000000000";
 const out = document.querySelector("#out");
-let account = null, provider = null;
+let account = null, provider = null, current = null;
 const gen = (v) => (Number(v) / 1e18).toFixed(2) + " GEN";
-function show(v) { const text = typeof v === "string" ? v : JSON.stringify(v, null, 2); out.textContent = text; document.querySelector("#log").open = text.startsWith("REJECTED"); }
+function show(v) { const text = typeof v === "string" ? v : JSON.stringify(v, null, 2); out.textContent = text; document.querySelector("#log").open = true; }
 function readClient() { return createClient({ chain: studionet, endpoint: "https://studio.genlayer.com/api", account: account || ZERO }); }
-document.querySelectorAll(".tabs button").forEach((b) => b.onclick = () => {
-  document.querySelectorAll(".tabs button").forEach((x) => x.classList.remove("on"));
-  document.querySelectorAll(".pane").forEach((x) => x.classList.remove("on"));
-  b.classList.add("on");
-  document.getElementById(b.dataset.tab).classList.add("on");
-});
+function guide(text, step) {
+  document.querySelector("#guide").textContent = text;
+  ["s1","s2","s3","s4"].forEach((id) => document.getElementById(id).classList.toggle("on", id === step));
+}
 async function write(functionName, args, value = 0n) {
   if (!account) throw new Error("Connect a wallet first.");
   show("Sending " + functionName);
@@ -113,25 +114,38 @@ async function watch(id) {
   return typeof raw === "string" ? JSON.parse(raw) : raw;
 }
 function paint(rec) {
-  if (!rec || !rec.id) return;
-  document.querySelector("#title").textContent = "Watch " + rec.id;
-  document.querySelector("#pill").textContent = rec.status || "—";
-  document.querySelector("#pill").className = "pill " + (rec.status || "");
-  document.querySelector("#leftVal").textContent = rec.left_value || "—";
-  document.querySelector("#rightVal").textContent = rec.right_value || "—";
-  document.querySelector("#leftUrl").textContent = rec.left_url || "";
-  document.querySelector("#rightUrl").textContent = rec.right_url || "";
-  document.querySelector("#mark").textContent = rec.left_value && rec.right_value && rec.left_value !== rec.right_value ? "!=" : "=";
-  const end = rec.deadline ? new Date(rec.deadline * 1000).toLocaleString() : "—";
-  document.querySelector("#meta").textContent = (rec.field || "—") + " · " + (rec.amount ? gen(rec.amount) : "—") + " · until " + end + " · " + (rec.note || "");
+  current = rec && rec.id ? rec : null;
+  document.querySelector("#title").textContent = current ? "Watch " + current.id : "No watch";
+  document.querySelector("#pill").textContent = current?.status || "—";
+  document.querySelector("#pill").className = "pill " + (current?.status || "");
+  document.querySelector("#leftVal").textContent = current?.left_value || "—";
+  document.querySelector("#rightVal").textContent = current?.right_value || "—";
+  document.querySelector("#leftUrl").textContent = current?.left_url || "";
+  document.querySelector("#rightUrl").textContent = current?.right_url || "";
+  document.querySelector("#mark").textContent = current?.left_value && current.left_value !== current.right_value ? "!=" : "=";
+  const end = current?.deadline ? new Date(current.deadline * 1000).toLocaleString() : "—";
+  document.querySelector("#meta").textContent = current ? current.field + " · " + gen(current.amount) + " · until " + end + " · " + current.note : "No watch loaded.";
+  const open = document.querySelector("#openWatch");
+  const recheck = document.querySelector("#recheck");
+  const refund = document.querySelector("#refund");
+  open.disabled = !account;
+  recheck.disabled = true;
+  refund.disabled = true;
+  if (!account) return guide("Connect a Studio wallet. The first step lights up.", "s1");
+  if (!current) return guide("Lock a window. Both pages must agree or the bond is not taken.", "s2");
+  const closed = Date.now() / 1000 >= Number(current.deadline);
+  if (current.status === "OPEN" && !closed) { recheck.disabled = false; return guide("Recheck is live. It pays only if the pages now differ.", "s3"); }
+  if (current.status === "OPEN" && closed) { refund.disabled = false; return guide("The window is closed. Refund returns the bond to the funder.", "s4"); }
+  if (current.status === "SPLIT") return guide("This watch paid the caller. Lock another pair to start again.", "s2");
+  if (current.status === "REFUNDED") return guide("This bond went back to the funder. Lock another pair to start again.", "s2");
 }
 async function board() {
   const raw = await readClient().readContract({ address: CONTRACT, functionName: "next_watch", args: [], stateStatus: "accepted" });
-  const next = Number(raw);
-  const rows = [];
-  for (let i = 1; i < next; i++) rows.push(await watch(String(i)));
-  const latest = rows[rows.length - 1]; if (latest) { document.querySelector('#id').value = latest.id; paint(latest); }
-  show(rows.length ? rows : "No open watch. Next id " + next);
+  const next = Number(String(raw).replace(/"/g, ""));
+  const id = document.querySelector("#id").value || String(Math.max(next - 1, 1));
+  const rec = await watch(id);
+  paint(rec && rec.id ? rec : null);
+  show(rec && rec.id ? rec : "No watch at id " + id);
 }
 document.querySelector("#connect").onclick = async () => {
   try {
@@ -139,20 +153,20 @@ document.querySelector("#connect").onclick = async () => {
     if (!provider) return show("No wallet found.");
     account = (await provider.request({ method: "eth_requestAccounts" }))[0];
     document.querySelector("#connect").textContent = account.slice(0, 6) + "…" + account.slice(-4);
-    show("CONNECTED " + account);
+    show("Connected " + account);
     await board();
-  } catch (e) { show("REJECTED: " + (e.message || String(e))); }
+  } catch (e) { show(e.message || String(e)); }
 };
+document.querySelector("#refresh").onclick = () => board().catch((e) => show(e.message || String(e)));
 document.querySelector("#openWatch").onclick = async () => {
   try {
     const value = BigInt(Math.round(Number(document.querySelector("#bond").value) * 1e6)) * 10n ** 12n;
     await write("open_watch", [document.querySelector("#left").value.trim(), document.querySelector("#right").value.trim(), document.querySelector("#field").value.trim(), document.querySelector("#hours").value.trim()], value);
-  } catch (e) { show("REJECTED: " + (e.message || String(e))); }
+  } catch (e) { show(e.message || String(e)); }
 };
-document.querySelector("#read").onclick = () => watch(document.querySelector("#id").value).then((rec) => { paint(rec); show(rec); }).catch((e) => show("REJECTED: " + (e.message || String(e))));
-document.querySelector("#dashRead").onclick = () => board().catch((e) => show("REJECTED: " + (e.message || String(e))));
-document.querySelector("#recheck").onclick = async () => { try { await write("recheck", [document.querySelector("#id").value]); } catch (e) { show("REJECTED: " + (e.message || String(e))); } };
-document.querySelector("#refund").onclick = async () => { try { await write("refund", [document.querySelector("#id").value]); } catch (e) { show("REJECTED: " + (e.message || String(e))); } };
+document.querySelector("#recheck").onclick = async () => { try { await write("recheck", [document.querySelector("#id").value]); } catch (e) { show(e.message || String(e)); } };
+document.querySelector("#refund").onclick = async () => { try { await write("refund", [document.querySelector("#id").value]); } catch (e) { show(e.message || String(e)); } };
+paint(null);
 </script>
 </body>
 </html>
