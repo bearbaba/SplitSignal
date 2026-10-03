@@ -47,7 +47,7 @@
     </div>
   </nav>
   <h1>Two pages.<br><i>One window.</i></h1>
-  <p class="mono">Bond travels with the transaction. Before the deadline only recheck pays. After it, only refund.</p>
+  <p class="mono">The bond is sent with the lock. Recheck can pay only before the deadline. Refund can pay only after it.</p>
   <div class="tabs">
     <button class="on" data-tab="dash">Dashboard</button>
     <button data-tab="open">Open</button>
@@ -61,9 +61,9 @@
         <div class="side"><span class="mono">RIGHT</span><b id="rightVal">—</b><span class="mono" id="rightUrl"></span></div>
       </div>
       <div>
-        <div class="row" style="justify-content:space-between"><b id="title">No watch yet</b><span class="pill" id="pill">—</span></div>
-        <p class="mono" id="meta">Next id is 1. This book is empty.</p>
-        <button id="dashRead" class="fill">Load book</button>
+        <div class="row" style="justify-content:space-between"><b id="title">No open watch</b><span class="pill" id="pill">—</span></div>
+        <p class="mono" id="meta">No watch has been opened.</p>
+        <button id="dashRead" class="fill">Refresh</button>
       </div>
     </div>
   </section>
@@ -75,13 +75,13 @@
       <div style="flex:1"><label>BOND GEN</label><input id="bond" value="0.1" /></div>
       <div style="flex:1"><label>HOURS</label><input id="hours" value="1" /></div>
     </div>
-    <div class="row" style="margin-top:16px"><button id="openWatch" class="hot">Lock window</button></div>
+    <div class="row" style="margin-top:16px"><button id="openWatch" class="hot">Lock</button></div>
   </section>
   <section id="watch" class="pane">
     <label>WATCH ID</label><input id="id" value="1" />
     <div class="row" style="margin-top:16px"><button id="read" class="fill">Read</button><button id="recheck" class="hot">Recheck</button><button id="refund">Refund</button></div>
   </section>
-  <details id="log"><summary class="mono">Receipt</summary><pre id="out">Connect a Studionet wallet.</pre></details>
+  <details id="log"><summary class="mono">Receipt</summary><pre id="out">Connect a Studio wallet.</pre></details>
 </main>
 <script type="module">
 import { createClient } from "https://esm.sh/genlayer-js@0.18.0?bundle";
@@ -100,12 +100,12 @@ document.querySelectorAll(".tabs button").forEach((b) => b.onclick = () => {
   document.getElementById(b.dataset.tab).classList.add("on");
 });
 async function write(functionName, args, value = 0n) {
-  if (!account) throw new Error("REJECTED: connect first");
-  show("SUBMITTING " + functionName);
+  if (!account) throw new Error("Connect a wallet first.");
+  show("Sending " + functionName);
   const c = createClient({ chain: studionet, account, provider });
   await c.connect("studionet");
   const tx = await c.writeContract({ address: CONTRACT, functionName, args, value });
-  show("SUBMITTED " + functionName + "\n" + (typeof tx === "string" ? tx : JSON.stringify(tx, null, 2)));
+  show("Sent " + functionName + "\n" + (typeof tx === "string" ? tx : JSON.stringify(tx, null, 2)));
   return tx;
 }
 async function watch(id) {
@@ -131,12 +131,12 @@ async function board() {
   const rows = [];
   for (let i = 1; i < next; i++) rows.push(await watch(String(i)));
   const latest = rows[rows.length - 1]; if (latest) { document.querySelector('#id').value = latest.id; paint(latest); }
-  show(rows.length ? rows : "No watch yet. Next id " + next);
+  show(rows.length ? rows : "No open watch. Next id " + next);
 }
 document.querySelector("#connect").onclick = async () => {
   try {
     provider = window.ethereum;
-    if (!provider) return show("REJECTED: no wallet");
+    if (!provider) return show("No wallet found.");
     account = (await provider.request({ method: "eth_requestAccounts" }))[0];
     document.querySelector("#connect").textContent = account.slice(0, 6) + "…" + account.slice(-4);
     show("CONNECTED " + account);
