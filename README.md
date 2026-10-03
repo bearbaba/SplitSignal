@@ -1,11 +1,11 @@
 # SplitSignal
 
-A Studionet pool that locks GEN on two https pages and one field.
+Studionet contract `0x9643A50a9645A3CF90CDC188b44f71Ec07C141b6`.
 
-Deployed contract: `0x07aeE113dD0248DB23BC0259ba1197D0cFC9e15b`
+A watch opens only when two https pages contain the same field token. The bond is the transaction value. Recheck pays the caller 95 percent if the pages differ before the deadline. Five percent goes to the deployer. Refund returns an open bond to the funder after the deadline.
 
-Watch 1 is OPEN: both IANA pages matched `iana` at open, 1 GEN reserved until 21:55 on 3 Oct 2026. A pair that already differs reverts with `already split` and does not reserve funds.
+Proven on this contract: watches 1 and 2 were refunded after the window. Watch 4 opened on two pages that both contained `iana`, then the right page was changed. Recheck returned left `yes`, right `no`, status `SPLIT`. The funder and finder were the same account.
 
-`recheck` pays the caller 95% when the frozen values diverge. Five percent stays in the pool. `refund` returns an open bond to the funder after the window. Neither path has a successful transaction yet.
+Not proven: a second account catching the split. The check is token presence, not a value cut from the page. An older pool contract at `0x07aeE113dD0248DB23BC0259ba1197D0cFC9e15b` is a different book.
 
 App: https://splitsignal-ten.vercel.app/
