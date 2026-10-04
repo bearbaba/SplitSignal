@@ -26,10 +26,22 @@ nav{display:flex;align-items:center;justify-content:space-between;gap:16px}.bran
 .actionbox{display:grid;gap:12px}.actionbox h3{font-size:30px;margin:0;font-weight:500}.actionbox p{margin:0;color:var(--muted);line-height:1.45}.reward{font-size:42px;line-height:1;margin:8px 0}.reward span{display:block;font-family:"IBM Plex Mono";font-size:10px;color:var(--muted);letter-spacing:.1em;margin-bottom:8px}
 .form{margin-top:14px}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{border:1px solid var(--line);border-radius:16px;padding:12px 14px;background:rgba(255,255,255,.01)}label{display:block;color:var(--muted);font-size:9px;letter-spacing:.12em;margin-bottom:7px}input{width:100%;border:0;outline:0;background:transparent;color:var(--ink);font-size:17px;padding:0}.span2{grid-column:span 2}.presets{display:flex;gap:6px;flex-wrap:wrap}.preset{padding:7px 10px}.preset.active{border-color:var(--hot);color:white}
 .preview{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.preview div{background:var(--panel2);border-radius:14px;padding:12px}.preview small{font-family:"IBM Plex Mono";font-size:9px;color:var(--muted);display:block;margin-bottom:5px}.preview b{font-size:17px;font-weight:500}
-.hunt{display:none}.hunt.active,.create.active{display:block}.create{display:none}.huntgrid{display:grid;gap:8px}.watchrow{display:grid;grid-template-columns:70px 1fr 120px 110px;gap:12px;align-items:center;border:1px solid var(--line);border-radius:16px;padding:14px;cursor:pointer}.watchrow:hover{border-color:var(--line2)}.watchrow .pair{min-width:0}.watchrow .pair b,.watchrow .pair span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.watchrow .pair span{font-family:"IBM Plex Mono";font-size:10px;color:var(--muted);margin-top:3px}
+.hunt{display:none}.hunt.active,.create.active{display:block}.create{display:none}.hunttools{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}
+.filter.active{background:var(--ink);color:#11100d}
+.statbar{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.statbox{border:1px solid var(--line);border-radius:15px;padding:12px}
+.statbox small{display:block;font-family:"IBM Plex Mono";font-size:9px;color:var(--muted);margin-bottom:5px}
+.statbox b{font-size:20px;font-weight:500}
+.huntgrid{display:grid;gap:8px}.watchrow{display:grid;grid-template-columns:70px 1fr 120px 110px;gap:12px;align-items:center;border:1px solid var(--line);border-radius:16px;padding:14px;cursor:pointer}.watchrow:hover{border-color:var(--line2)}.watchrow .pair{min-width:0}.watchrow .pair b,.watchrow .pair span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.watchrow .pair span{font-family:"IBM Plex Mono";font-size:10px;color:var(--muted);margin-top:3px}
 .advanced{margin-top:14px}.advanced summary{cursor:pointer;color:var(--muted);font-family:"IBM Plex Mono";font-size:11px}.receipt{white-space:pre-wrap;word-break:break-word;font-size:11px;color:#c9c1b4;line-height:1.55;margin-top:12px;max-height:300px;overflow:auto}
 .field.invalid{border-color:#ff8b73}.field.valid{border-color:rgba(183,245,176,.35)}
 .successGlow{box-shadow:inset 0 0 0 1px rgba(240,90,0,.55),0 0 60px rgba(240,90,0,.08)}
+.celebrate{position:fixed;inset:0;background:rgba(9,10,9,.88);backdrop-filter:blur(14px);z-index:30;display:none;align-items:center;justify-content:center;padding:20px}
+.celebrate.show{display:flex}
+.winbox{width:min(560px,100%);border:1px solid rgba(255,92,0,.45);border-radius:30px;padding:34px;background:radial-gradient(circle at 50% 0,rgba(255,92,0,.18),transparent 42%),var(--panel);text-align:center;box-shadow:0 30px 120px #000}
+.winbox .giant{font-size:70px;line-height:.9;margin:14px 0;color:var(--hot)}
+.winbox h2{font-size:42px;margin:8px 0}
+.winbox p{color:var(--muted)}
 .toast{position:fixed;right:20px;bottom:20px;max-width:390px;background:var(--ink);color:#15130f;border-radius:16px;padding:14px 16px;font-family:"IBM Plex Mono";font-size:11px;box-shadow:0 16px 60px #0008;transform:translateY(130%);transition:.25s;z-index:10}.toast.show{transform:none}.toast.error{background:#ffd4ca}
 .docs{display:none;grid-template-columns:170px 1fr;gap:34px;margin-top:28px}.docs.active{display:grid}.docs aside{position:sticky;top:20px;align-self:start;display:grid;gap:10px}.docs aside a{font-family:"IBM Plex Mono";font-size:11px;color:var(--muted)}.docs article section{padding:0 0 44px}.docs h2{font-size:42px;margin:5px 0 8px}.docs p{color:#c7c0b4;line-height:1.55}
 @media(max-width:850px){.hero,.grid{grid-template-columns:1fr}.hero{padding-top:42px}.heroaside{border-left:0;border-top:1px solid var(--line);padding:18px 0 0}.signal{grid-template-columns:1fr}.compare{height:20px}.source{min-height:165px}.metrics,.preview{grid-template-columns:1fr 1fr}.watchrow{grid-template-columns:55px 1fr 90px}.watchrow .finder{display:none}.docs{grid-template-columns:1fr}.docs aside{position:static;display:flex;flex-wrap:wrap}}
@@ -139,8 +151,19 @@ nav{display:flex;align-items:center;justify-content:space-between;gap:16px}.bran
 
       <section id="huntView" class="card hunt">
         <div class="cardhead"><div><div class="eyebrow">Open bounty board</div><h2>Find a bounty</h2></div><button id="reloadHunt" class="btn">Refresh</button></div>
-        <p class="mono" style="color:var(--muted);font-size:11px;line-height:1.6">Pick an OPEN watch → open both source links → if they no longer agree, press Recheck & claim. Recent watches are read directly from accepted on-chain state.</p>
-        <div id="huntList" class="huntgrid"><div class="mono">Connect a wallet or refresh to load watches.</div></div>
+        <p class="mono" style="color:var(--muted);font-size:11px;line-height:1.6">Pick an OPEN watch → inspect both sources → if they no longer agree, press Recheck & claim. Everything below is read from accepted on-chain state.</p>
+        <div class="statbar">
+          <div class="statbox"><small>OPEN</small><b id="statOpen">—</b></div>
+          <div class="statbox"><small>MY WATCHES</small><b id="statMine">—</b></div>
+          <div class="statbox"><small>MY CLAIMS</small><b id="statClaims">—</b></div>
+        </div>
+        <div class="hunttools">
+          <button class="btn filter active" data-filter="ending">Ending soon</button>
+          <button class="btn filter" data-filter="bounty">Highest bounty</button>
+          <button class="btn filter" data-filter="mine">My watches</button>
+          <button class="btn filter" data-filter="claims">My claims</button>
+        </div>
+        <div id="huntList" class="huntgrid"><div class="mono">Refresh to load recent watches.</div></div>
       </section>
     </div>
 
@@ -186,6 +209,18 @@ nav{display:flex;align-items:center;justify-content:space-between;gap:16px}.bran
   </article>
 </div>
 </div>
+<div id="celebrate" class="celebrate">
+  <div class="winbox">
+    <div class="eyebrow">SPLIT VERIFIED ON-CHAIN</div>
+    <div class="giant">≠</div>
+    <h2>Signal found.</h2>
+    <p id="winText">The sources diverged and the finder reward was triggered.</p>
+    <div class="row" style="justify-content:center;margin-top:18px">
+      <button id="shareWin" class="btn hot">Share result</button>
+      <button id="closeWin" class="btn">Back to watch</button>
+    </div>
+  </div>
+</div>
 <div id="toast" class="toast"></div>
 
 <script type="module">
@@ -194,7 +229,7 @@ import { studionet } from "https://esm.sh/genlayer-js@0.18.0/chains?bundle";
 
 const CONTRACT="0x68d058A66f486adeeF845785540f9056bc9E9E87";
 const ZERO="0x0000000000000000000000000000000000000000";
-let account=null,provider=null,current=null,busy=false,timer=null;
+let account=null,provider=null,current=null,busy=false,timer=null,boardRows=[],huntFilter='ending',lastStatus=null;
 const $=(s)=>document.querySelector(s);
 const short=(a)=>a&&a!==ZERO?a.slice(0,6)+"…"+a.slice(-4):"—";
 const genNum=(v)=>Number(v||0)/1e18;
@@ -235,7 +270,13 @@ function timeLeft(deadline){
   return d?`${d}d ${h}h`:h?`${h}h ${m}m`:`${m}m`
 }
 function renderWatch(rec){
+  const previousStatus=current?.status||lastStatus;
   current=rec&&rec.id?rec:null;
+  if(current?.status==="SPLIT" && previousStatus==="OPEN" && account && current.finder?.toLowerCase()===account.toLowerCase()){
+    $("#winText").textContent=`Watch #${current.id} split. ${fmtGen(rewardOf(current.amount),6)} finder reward triggered for ${short(current.finder)}.`;
+    $("#celebrate").classList.add("show");
+  }
+  lastStatus=current?.status||lastStatus;
   $("#watchTitle").textContent=current?"Watch #"+current.id:"Choose or create a watch";
   document.querySelector(".signal").classList.toggle("successGlow",current?.status==="SPLIT");
   $("#status").textContent=current?.status||"—";$("#status").className="status "+(current?.status||"");
@@ -265,17 +306,41 @@ function renderActions(){
 }
 async function loadId(id,quiet=false){if(!id)return;try{const r=await watch(id);if(r?.id){renderWatch(r);if(!quiet)receipt(r)}else if(!quiet)toast("No watch found at #"+id,true)}catch(e){if(!quiet){receipt(e.message||String(e));toast(e.message||String(e),true)}}}
 async function loadLatestOrCurrent(){const n=await nextWatch();const id=current?.id||Math.max(n-1,1);await loadId(id)}
+function renderHunt(){
+  const box=$("#huntList");
+  let rows=[...boardRows];
+  const now=Date.now()/1000;
+  if(huntFilter==="ending") rows=rows.filter(x=>x.status==="OPEN"&&now<Number(x.deadline)).sort((a,b)=>Number(a.deadline)-Number(b.deadline));
+  if(huntFilter==="bounty") rows=rows.filter(x=>x.status==="OPEN"&&now<Number(x.deadline)).sort((a,b)=>Number(b.amount)-Number(a.amount));
+  if(huntFilter==="mine") rows=account?rows.filter(x=>x.funder?.toLowerCase()===account.toLowerCase()):[];
+  if(huntFilter==="claims") rows=account?rows.filter(x=>x.status==="SPLIT"&&x.finder?.toLowerCase()===account.toLowerCase()):[];
+  box.innerHTML="";
+  if(!rows.length){box.innerHTML='<div class="mono" style="color:var(--muted);padding:18px 0">Nothing here yet. Try another filter or create a new watch.</div>';return}
+  rows.forEach(r=>{
+    const live=r.status==="OPEN"&&now<Number(r.deadline);
+    const el=document.createElement("div");el.className="watchrow";
+    el.innerHTML=`<b>#${r.id}</b><div class="pair"><b>${r.field} · ${r.status}</b><span>${r.left_url} ↔ ${r.right_url}</span></div><div class="bounty mono">${fmtGen(genNum(r.amount),4)}</div><div class="finder mono">${live?timeLeft(r.deadline):r.status}</div>`;
+    el.onclick=async()=>{await loadId(r.id);window.scrollTo({top:document.querySelector(".signal").getBoundingClientRect().top+scrollY-24,behavior:"smooth"})};
+    box.appendChild(el)
+  })
+}
 async function loadHunt(){
-  const box=$("#huntList");box.innerHTML='<div class="mono">Loading recent watches…</div>';
+  const box=$("#huntList");box.innerHTML='<div class="mono">Loading recent on-chain activity…</div>';
   try{
-    const n=await nextWatch(),ids=[];for(let i=n-1;i>=1&&ids.length<12;i--)ids.push(i);
-    const rows=(await Promise.all(ids.map(i=>watch(i).catch(()=>null)))).filter(x=>x?.id);
-    const open=rows.filter(x=>x.status==="OPEN"&&Date.now()/1000<Number(x.deadline));
-    box.innerHTML="";
-    if(!open.length){box.innerHTML='<div class="mono">No recent open watches.</div>';return}
-    open.forEach(r=>{const el=document.createElement("div");el.className="watchrow";el.innerHTML=`<b>#${r.id}</b><div class="pair"><b>${r.field}</b><span>${r.left_url} ↔ ${r.right_url}</span></div><div class="bounty mono">${fmtGen(genNum(r.amount),4)}</div><div class="finder mono">${timeLeft(r.deadline)}</div>`;el.onclick=async()=>{await loadId(r.id);window.scrollTo({top:document.querySelector(".signal").getBoundingClientRect().top+scrollY-24,behavior:"smooth"})};box.appendChild(el)})
+    const n=await nextWatch(),ids=[];for(let i=n-1;i>=1&&ids.length<30;i--)ids.push(i);
+    boardRows=(await Promise.all(ids.map(i=>watch(i).catch(()=>null)))).filter(x=>x?.id);
+    const now=Date.now()/1000;
+    $("#statOpen").textContent=boardRows.filter(x=>x.status==="OPEN"&&now<Number(x.deadline)).length;
+    $("#statMine").textContent=account?boardRows.filter(x=>x.funder?.toLowerCase()===account.toLowerCase()).length:"—";
+    $("#statClaims").textContent=account?boardRows.filter(x=>x.status==="SPLIT"&&x.finder?.toLowerCase()===account.toLowerCase()).length:"—";
+    renderHunt()
   }catch(e){box.innerHTML='<div class="mono">Could not load watches.</div>';toast(e.message||String(e),true)}
 }
+document.querySelectorAll(".filter").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".filter").forEach(x=>x.classList.toggle("active",x===b));
+  huntFilter=b.dataset.filter;renderHunt()
+});
+
 function preview(){
   const b=Math.max(0,Number($("#bond").value)||0);$("#pvLock").textContent=fmtGen(b,6);$("#pvFinder").textContent=fmtGen(b*.95,6);$("#pvFee").textContent=fmtGen(b*.05,6)
 }
@@ -361,6 +426,17 @@ if(window.ethereum?.on){
     if(account){await updateBalance();await loadLatestOrCurrent();}else updateBalance();
   });
 }
+
+
+$("#closeWin").onclick=()=>$("#celebrate").classList.remove("show");
+$("#shareWin").onclick=async()=>{
+  if(!current)return;
+  const u=new URL(location.href);u.searchParams.set("watch",current.id);
+  try{
+    if(navigator.share)await navigator.share({title:`SplitSignal #${current.id} — SPLIT`,text:`Signal found. ${fmtGen(rewardOf(current.amount),6)} finder reward triggered.`,url:u.toString()});
+    else{await navigator.clipboard.writeText(u.toString());toast("Result link copied.")}
+  }catch(e){if(e?.name!=="AbortError")toast("Could not share.",true)}
+};
 
 timer=setInterval(()=>{if(current){$("#metricTime").textContent=timeLeft(current.deadline);renderActions()}},1000);
 preview();renderWatch(null);validateCreate();health();
