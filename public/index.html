@@ -120,12 +120,41 @@ function guide(text, step) {
   ["s1","s2","s3","s4"].forEach((id) => document.getElementById(id).classList.toggle("on", id === step));
 }
 async function write(functionName, args, value = 0n) {
-  if (!account) throw new Error("Connect a wallet first.");
-  show("Sending " + functionName);
-  const c = createClient({ chain: studionet, account, provider });
+  if (!account || !provider) throw new Error("Connect a wallet first.");
+
+  const c = createClient({
+    chain: studionet,
+    account,
+    provider
+  });
+
+  show("1/3 Switching wallet to Studionet...");
   await c.connect("studionet");
-  const tx = await c.writeContract({ address: CONTRACT, functionName, args, value });
-  show("Sent " + functionName + "\n" + (typeof tx === "string" ? tx : JSON.stringify(tx, null, 2)));
+
+  const call = {
+    address: CONTRACT,
+    functionName,
+    args,
+    value
+  };
+
+  show("2/3 Estimating transaction fees...");
+  const estimate = await c.estimateTransactionFeesForWrite(call);
+
+  show("3/3 Check your wallet and sign the transaction...");
+  const tx = await c.writeContract({
+    ...call,
+    fees: {
+      distribution: estimate.distribution,
+      feeValue: estimate.feeValue
+    }
+  });
+
+  show(
+    "Transaction submitted\n" +
+    (typeof tx === "string" ? tx : JSON.stringify(tx, null, 2))
+  );
+
   await board();
   return tx;
 }
