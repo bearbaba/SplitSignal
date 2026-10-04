@@ -2,194 +2,370 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>SplitSignal</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,500&display=swap" rel="stylesheet" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="theme-color" content="#0d0d0b" />
+<title>SplitSignal — Find the split. Claim the signal.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap" rel="stylesheet">
 <style>
-  :root { --bg:#12110e; --card:#1c1a16; --line:rgba(244,236,220,.12); --muted:#b7b1a4; --ink:#f7f1e6; --hot:#e85d04; }
-  * { box-sizing:border-box; }
-  html { scroll-behavior:smooth; } body { margin:0; background:var(--bg); color:var(--ink); font-family:Newsreader,serif; }
-  main { max-width:980px; margin:0 auto; padding:28px 20px 80px; }
-  nav, .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-  nav { justify-content:space-between; }
-  a, .mono, button { font-family:"IBM Plex Mono",monospace; }
-  a, .mono { color:var(--muted); font-size:12px; text-decoration:none; }
-  .chip { border:1px solid var(--line); border-radius:999px; padding:8px 12px; }
-  h1 { font-size:64px; font-weight:500; line-height:.9; margin:28px 0 8px; }
-  h1 i { color:var(--hot); }
-  .steps { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:22px 0; }
-  .step { border:1px solid var(--line); border-radius:16px; padding:12px; color:var(--muted); transition:.2s transform,.2s border-color; }
-  .step.on { border-color:var(--hot); color:var(--ink); transform:translateY(-2px); }
-  .step b { display:block; color:var(--ink); margin-bottom:4px; }
-  .desk { display:grid; grid-template-columns:1.4fr .8fr; gap:12px; }
-  section { background:var(--card); border:1px solid var(--line); border-radius:22px; padding:18px; }
-  .stage { min-height:220px; display:grid; grid-template-columns:1fr auto 1fr; gap:12px; align-items:center; }
-  .side b { display:block; font-size:64px; margin:8px 0; transition:.2s opacity; }
-  .mark { font-size:28px; color:var(--hot); }
-  label { display:block; margin:12px 0 6px; color:var(--muted); font-size:11px; letter-spacing:.12em; }
-  input { width:100%; border:0; border-bottom:1px solid var(--line); background:transparent; color:white; padding:10px 0; font:18px Newsreader,serif; }
-  button { border:1px solid var(--line); background:transparent; color:white; border-radius:999px; padding:10px 14px; cursor:pointer; }
-  button:disabled { opacity:.35; cursor:default; }
-  .hot { background:var(--hot); border-color:var(--hot); } .fill { background:var(--ink); color:#17140f; }
-  .pill { border-radius:999px; padding:4px 8px; background:#2c291f; }
-  .OPEN { background:#243224; } .SPLIT { background:var(--hot); } .REFUNDED { background:#3a3428; }
-  #guide { min-height:4.5em; }
-  pre { white-space:pre-wrap; font-size:12px; color:#ddd6c6; }
-  @media (max-width:800px) { h1 { font-size:42px; } .steps, .desk, .stage { grid-template-columns:1fr; } .mark { display:none; } }
-.docs { display:grid; grid-template-columns:140px 1fr; gap:28px; margin-top:28px; } .docs aside { position:sticky; top:20px; align-self:start; display:grid; gap:10px; } .docs h2 { font-size:40px; font-weight:500; margin:6px 0; } .docs section { border:0; background:transparent; padding:0 0 48px; } </style>
+:root{--bg:#090a09;--panel:#121310;--panel2:#191a16;--ink:#f5f0e7;--muted:#9f9d94;--line:rgba(245,240,231,.10);--line2:rgba(245,240,231,.20);--hot:#ff5c00;--ok:#b9f6ae;--bad:#ff9c86;--r:24px}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 72% -10%,rgba(255,92,0,.10),transparent 28%),var(--bg);color:var(--ink);font-family:Newsreader,serif}button,input{font:inherit}button{color:inherit}a{color:inherit;text-decoration:none}
+.mono,.eyebrow,label,.btn,.chip,.metric small,.source small,.receipt,select{font-family:"IBM Plex Mono",monospace}
+.shell{max-width:1180px;margin:auto;padding:24px 24px 88px}
+nav{display:flex;align-items:center;justify-content:space-between;gap:16px}.brand{font-size:18px;font-weight:600}.navright,.row{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.chip{font-size:11px;border:1px solid var(--line);border-radius:999px;padding:9px 12px;color:var(--muted)}.chip strong{color:var(--ink)}
+.btn{border:1px solid var(--line2);background:transparent;border-radius:999px;padding:11px 15px;font-size:12px;cursor:pointer;transition:.18s transform,.18s opacity,.18s background}.btn:hover:not(:disabled){transform:translateY(-1px)}.btn:disabled{opacity:.3;cursor:not-allowed}.btn.primary{background:var(--ink);color:#11100d;border-color:var(--ink)}.btn.hot{background:var(--hot);border-color:var(--hot);color:white}.btn.block{width:100%;padding:14px}
+.hero{position:relative;display:grid;grid-template-columns:1.2fr .8fr;gap:36px;align-items:end;padding:64px 0 36px;border-bottom:1px solid var(--line)}
+.eyebrow{font-size:11px;letter-spacing:.13em;color:var(--muted);text-transform:uppercase}.hero:after{content:'SPLIT / SIGNAL';position:absolute;right:0;top:30px;font-family:'IBM Plex Mono';font-size:10px;letter-spacing:.2em;color:rgba(245,240,231,.16);writing-mode:vertical-rl}.hero h1{font-size:clamp(54px,8vw,102px);line-height:.82;letter-spacing:-.045em;margin:14px 0 18px;font-weight:500}.hero h1 em{color:var(--hot);font-weight:500}.hero p{max-width:620px;color:#c7c0b4;font-size:18px;line-height:1.5;margin:0}.heroaside{border-left:1px solid var(--line);padding-left:24px}.heroaside strong{display:block;font-size:42px;font-weight:500}.heroaside p{font-size:14px;color:var(--muted)}
+.tabs{display:flex;gap:8px;margin:24px 0}.tab.active{background:var(--ink);color:#11100d}
+.grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(320px,.6fr);gap:14px}.card{background:linear-gradient(180deg,rgba(255,255,255,.018),transparent 34%),var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:20px;box-shadow:0 20px 80px rgba(0,0,0,.16)}
+.cardhead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}.cardhead h2{font-size:25px;margin:0;font-weight:500}.status{font-family:"IBM Plex Mono";font-size:11px;border-radius:999px;padding:7px 10px;background:#29271f}.status.OPEN{background:#20331f;color:#dfffd9}.status.SPLIT{background:var(--hot);color:white}.status.REFUNDED{background:#3a352a}
+.signal{display:grid;grid-template-columns:1fr 52px 1fr;gap:12px;align-items:stretch}.source{min-height:220px;border:1px solid var(--line);border-radius:18px;padding:18px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}.source small{color:var(--muted);font-size:10px;letter-spacing:.12em}.source .value{font-size:clamp(52px,7vw,86px);line-height:.8;margin:26px 0 20px}.source a{font-family:"IBM Plex Mono";font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.compare{display:flex;align-items:center;justify-content:center;font-family:"IBM Plex Mono";color:var(--hot);font-size:26px}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.metric{border:1px solid var(--line);border-radius:15px;padding:13px}.metric small{display:block;color:var(--muted);font-size:9px;letter-spacing:.1em;margin-bottom:6px}.metric b{font-weight:500;font-size:18px}
+.actionbox{display:grid;gap:12px}.actionbox h3{font-size:30px;margin:0;font-weight:500}.actionbox p{margin:0;color:var(--muted);line-height:1.45}.reward{font-size:42px;line-height:1;margin:8px 0}.reward span{display:block;font-family:"IBM Plex Mono";font-size:10px;color:var(--muted);letter-spacing:.1em;margin-bottom:8px}
+.form{margin-top:14px}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{border:1px solid var(--line);border-radius:16px;padding:12px 14px;background:rgba(255,255,255,.01)}label{display:block;color:var(--muted);font-size:9px;letter-spacing:.12em;margin-bottom:7px}input{width:100%;border:0;outline:0;background:transparent;color:var(--ink);font-size:17px;padding:0}.span2{grid-column:span 2}.presets{display:flex;gap:6px;flex-wrap:wrap}.preset{padding:7px 10px}.preset.active{border-color:var(--hot);color:white}
+.preview{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.preview div{background:var(--panel2);border-radius:14px;padding:12px}.preview small{font-family:"IBM Plex Mono";font-size:9px;color:var(--muted);display:block;margin-bottom:5px}.preview b{font-size:17px;font-weight:500}
+.hunt{display:none}.hunt.active,.create.active{display:block}.create{display:none}.huntgrid{display:grid;gap:8px}.watchrow{display:grid;grid-template-columns:70px 1fr 120px 110px;gap:12px;align-items:center;border:1px solid var(--line);border-radius:16px;padding:14px;cursor:pointer}.watchrow:hover{border-color:var(--line2)}.watchrow .pair{min-width:0}.watchrow .pair b,.watchrow .pair span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.watchrow .pair span{font-family:"IBM Plex Mono";font-size:10px;color:var(--muted);margin-top:3px}
+.advanced{margin-top:14px}.advanced summary{cursor:pointer;color:var(--muted);font-family:"IBM Plex Mono";font-size:11px}.receipt{white-space:pre-wrap;word-break:break-word;font-size:11px;color:#c9c1b4;line-height:1.55;margin-top:12px;max-height:300px;overflow:auto}
+.field.invalid{border-color:#ff8b73}.field.valid{border-color:rgba(183,245,176,.35)}
+.successGlow{box-shadow:inset 0 0 0 1px rgba(240,90,0,.55),0 0 60px rgba(240,90,0,.08)}
+.toast{position:fixed;right:20px;bottom:20px;max-width:390px;background:var(--ink);color:#15130f;border-radius:16px;padding:14px 16px;font-family:"IBM Plex Mono";font-size:11px;box-shadow:0 16px 60px #0008;transform:translateY(130%);transition:.25s;z-index:10}.toast.show{transform:none}.toast.error{background:#ffd4ca}
+.docs{display:none;grid-template-columns:170px 1fr;gap:34px;margin-top:28px}.docs.active{display:grid}.docs aside{position:sticky;top:20px;align-self:start;display:grid;gap:10px}.docs aside a{font-family:"IBM Plex Mono";font-size:11px;color:var(--muted)}.docs article section{padding:0 0 44px}.docs h2{font-size:42px;margin:5px 0 8px}.docs p{color:#c7c0b4;line-height:1.55}
+@media(max-width:850px){.hero,.grid{grid-template-columns:1fr}.hero{padding-top:42px}.heroaside{border-left:0;border-top:1px solid var(--line);padding:18px 0 0}.signal{grid-template-columns:1fr}.compare{height:20px}.source{min-height:165px}.metrics,.preview{grid-template-columns:1fr 1fr}.watchrow{grid-template-columns:55px 1fr 90px}.watchrow .finder{display:none}.docs{grid-template-columns:1fr}.docs aside{position:static;display:flex;flex-wrap:wrap}}
+@media(max-width:560px){.shell{padding:16px 14px 70px}.navright .contractchip{display:none}.hero:after{content:'SPLIT / SIGNAL';position:absolute;right:0;top:30px;font-family:'IBM Plex Mono';font-size:10px;letter-spacing:.2em;color:rgba(245,240,231,.16);writing-mode:vertical-rl}.hero h1{font-size:56px}.formgrid{grid-template-columns:1fr}.span2{grid-column:auto}.metrics,.preview{grid-template-columns:1fr}.card{padding:15px}.watchrow{grid-template-columns:48px 1fr}.watchrow .bounty,.watchrow .finder{display:none}}
+</style>
 </head>
 <body>
-<main>
-  <nav>
-    <b>SplitSignal</b>
-    <div class="row">
-      <span class="chip mono">Studionet</span>
-      <a class="chip" href="https://studio.genlayer.com/?import-contract=0x68d058A66f486adeeF845785540f9056bc9E9E87">0x9643…41b6</a>
-      <button id="connect" class="fill">Connect</button>
-    </div>
-  </nav>
-  <h1>Two pages.<br><i>One window.</i></h1>
-  <p class="mono">Lock GEN while two pages contain the same token. Recheck pays 95 percent if they differ before the deadline. Refund pays after it.</p>
-  <div class="row" style="margin-top:18px"><button id="tabDesk" class="fill">Desk</button><button id="tabDocs">Docs</button></div>
-<div id="docs" style="display:none">
-  <div class="docs">
-    <aside>
-      <a href="#law">Law</a>
-      <a href="#open">Open</a>
-      <a href="#pay">Pay</a>
-      <a href="#exit">Exit</a>
-      <a href="#limit">Limit</a>
-    </aside>
-    <article>
-      <section id="law"><span class="mono">01</span><h2>The law</h2><p>Two https pages and one field. GEN travels with the lock. The contract is 0x68d058A66f486adeeF845785540f9056bc9E9E87 on Studionet.</p></section>
-      <section id="open"><span class="mono">02</span><h2>Open</h2><p>A window opens only when both pages agree. A pair that already differs is rejected. The bond stays with the sender.</p></section>
-      <section id="pay"><span class="mono">03</span><h2>Pay</h2><p>Recheck can pay only before the deadline. If the pages differ, the caller receives 95 percent. Five percent goes to the deployer. A successful split moves the watch to SPLIT before payout.</p></section>
-      <section id="exit"><span class="mono">04</span><h2>Exit</h2><p>Refund can pay only after the deadline, and only while the watch is open. The full bond returns to the funder after the deadline.</p></section>
-      <section id="limit"><span class="mono">05</span><h2>Limit</h2><p>The check is token presence, not a value cut from the page. The funder and the finder may be different accounts.</p></section>
-    </article>
+<div class="shell">
+<nav>
+  <div class="brand">SplitSignal</div>
+  <div class="navright">
+    <span class="chip"><strong>●</strong> STUDIONET</span>
+    <span id="balanceChip" class="chip">Balance —</span>
+    <a id="faucetBtn" class="chip" target="_blank" rel="noopener" href="https://studio.genlayer.com/">💧 Get test GEN</a>
+    <a class="chip contractchip" target="_blank" rel="noopener" href="https://studio.genlayer.com/?import-contract=0x68d058A66f486adeeF845785540f9056bc9E9E87">0x68d0…9E87 ↗</a>
+    <button id="connect" class="btn primary">Connect wallet</button>
+  </div>
+</nav>
+
+<header class="hero">
+  <div>
+    <div class="eyebrow">Web change bounty protocol</div>
+    <h1>Watch two sources.<br><em>Reward the difference.</em></h1>
+    <p>SplitSignal watches the same token across two web pages. Lock a bounty while they agree; if one changes before time runs out, the first person to verify it earns 95%.</p>
+  </div>
+  <div class="heroaside">
+    <div class="eyebrow">Protocol rule</div>
+    <strong>95 / 5</strong>
+    <p>95% to the finder. 5% protocol fee. If no split appears before expiry, the funder can reclaim the bond.</p>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="btn tab active" data-view="create">＋ Create watch</button>
+  <button class="btn tab" data-view="hunt">◎ Find bounties</button>
+  <button class="btn tab" data-view="docs">? How it works</button>
+</div>
+<div class="row" style="justify-content:space-between;margin:-8px 0 18px">
+  <div class="row">
+    <span id="healthChip" class="chip">● RPC checking</span>
+    <span id="latestChip" class="chip">Latest watch —</span>
+  </div>
+  <div class="row">
+    <button id="shareWatch" class="btn" disabled>Share watch</button>
+    <button id="copyContract" class="btn">Copy contract</button>
   </div>
 </div>
-<div id="deskWrap"><div class="steps">
-    <div class="step" id="s1"><b>1 Connect</b><span>A Studio wallet.</span></div>
-    <div class="step" id="s2"><b>2 Lock</b><span>Only if both pages agree.</span></div>
-    <div class="step" id="s3"><b>3 Recheck</b><span>Pays 95% on a split.</span></div>
-    <div class="step" id="s4"><b>4 Refund</b><span>After the deadline.</span></div>
-  </div>
-  <div class="desk">
-    <section class="stage">
-      <div class="side"><span class="mono">LEFT</span><b id="leftVal">—</b><span class="mono" id="leftUrl"></span></div>
-      <div class="mark" id="mark">=</div>
-      <div class="side"><span class="mono">RIGHT</span><b id="rightVal">—</b><span class="mono" id="rightUrl"></span></div>
-    </section>
-    <section>
-      <div class="row" style="justify-content:space-between"><b id="title">No watch</b><span class="pill" id="pill">—</span></div>
-      <p class="mono" id="meta">Refresh after connecting.</p>
-      <p id="guide">Connect, then refresh. The lit step is the one you can do.</p>
-      <button id="refresh" class="fill">Refresh</button>
-    </section>
-  </div>
-  <section style="margin-top:12px">
-    <label>LEFT</label><input id="left" value="https://splitsignal-ten.vercel.app/left.html" />
-    <label>RIGHT</label><input id="right" value="https://splitsignal-ten.vercel.app/right.html" />
-    <label>FIELD</label><input id="field" value="iana" />
-    <div class="row">
-      <div style="flex:1"><label>BOND GEN</label><input id="bond" value="0.1" /></div>
-      <div style="flex:1"><label>HOURS</label><input id="hours" value="1" /></div>
-      <div style="flex:1"><label>WATCH ID</label><input id="id" value="" /></div>
+
+<div id="appView">
+  <div class="grid">
+    <div>
+      <section class="card">
+        <div class="cardhead">
+          <div><div class="eyebrow">Live signal</div><h2 id="watchTitle">No watch loaded</h2></div>
+          <span id="status" class="status">—</span>
+        </div>
+        <div class="signal">
+          <div class="source">
+            <div><small>SOURCE A</small><div id="leftValue" class="value">—</div></div>
+            <div><a id="leftLink" target="_blank" rel="noopener"></a><div style="margin-top:10px"><button id="openLeft" class="btn">Open source A ↗</button></div></div>
+          </div>
+          <div id="compare" class="compare">=</div>
+          <div class="source">
+            <div><small>SOURCE B</small><div id="rightValue" class="value">—</div></div>
+            <div><a id="rightLink" target="_blank" rel="noopener"></a><div style="margin-top:10px"><button id="openRight" class="btn">Open source B ↗</button></div></div>
+          </div>
+        </div>
+        <div class="metrics" style="grid-template-columns:repeat(4,1fr)">
+          <div class="metric"><small>BOUNTY</small><b id="metricBounty">—</b></div>
+          <div class="metric"><small>FINDER GETS</small><b id="metricFinder">—</b></div>
+          <div class="metric"><small>TIME LEFT</small><b id="metricTime">—</b></div>
+          <div class="metric"><small>FIELD</small><b id="metricField">—</b></div>
+        </div>
+      </section>
+
+      <section id="createView" class="card form create active">
+        <div class="cardhead"><div><div class="eyebrow">Fund a signal</div><h2>Create a watch</h2></div><span class="chip">HTTPS ONLY</span></div>
+        <p class="mono" style="color:var(--muted);font-size:11px;line-height:1.6;margin:-6px 0 16px">Choose two public pages that currently agree, then enter the word or token you want SplitSignal to watch.</p>
+        <div class="row" style="margin-bottom:12px">
+          <button id="useDemo" class="btn">Use safe demo</button>
+          <span class="mono" style="font-size:10px;color:var(--muted)">New here? Load a working example first.</span>
+        </div>
+        <div class="formgrid">
+          <div class="field span2"><label>SOURCE A URL · MUST BE PUBLIC</label><input id="left" value="https://splitsignal-ten.vercel.app/left.html" placeholder="https://site-a.com/page"></div>
+          <div class="field span2"><label>SOURCE B URL · MUST BE PUBLIC</label><input id="right" value="https://splitsignal-ten.vercel.app/right.html" placeholder="https://site-b.com/page"></div>
+          <div class="field"><label>WORD / TOKEN TO WATCH</label><input id="field" value="iana" maxlength="32" placeholder="e.g. approved"></div>
+          <div class="field"><label>BOUNTY · GEN</label><input id="bond" value="0.01" inputmode="decimal"><div class="presets" style="margin-top:9px"><button class="btn bountyPreset" data-bond=".01">0.01</button><button class="btn bountyPreset" data-bond=".05">0.05</button><button class="btn bountyPreset" data-bond=".1">0.10</button><button class="btn bountyPreset" data-bond="1">1 GEN</button></div></div>
+          <div class="field span2">
+            <label>WATCH WINDOW</label>
+            <div class="presets">
+              <button class="btn preset active" data-hours="1">1 hour</button>
+              <button class="btn preset" data-hours="6">6 hours</button>
+              <button class="btn preset" data-hours="24">24 hours</button>
+              <button class="btn preset" data-hours="168">7 days</button>
+            </div>
+            <input id="hours" value="1" type="hidden">
+          </div>
+        </div>
+        <div class="preview">
+          <div><small>YOU LOCK</small><b id="pvLock">0.01 GEN</b></div>
+          <div><small>FINDER GETS</small><b id="pvFinder">0.0095 GEN</b></div>
+          <div><small>PROTOCOL</small><b id="pvFee">0.0005 GEN</b></div>
+        </div>
+        <div id="formHint" class="mono" style="font-size:10px;color:var(--muted);margin:2px 0 12px">Minimum bounty: 0.01 GEN · Both pages must agree when the watch opens.</div>
+        <button id="openWatch" class="btn hot block" disabled>Connect wallet to create</button>
+      </section>
+
+      <section id="huntView" class="card hunt">
+        <div class="cardhead"><div><div class="eyebrow">Open bounty board</div><h2>Find a bounty</h2></div><button id="reloadHunt" class="btn">Refresh</button></div>
+        <p class="mono" style="color:var(--muted);font-size:11px;line-height:1.6">Pick an OPEN watch → open both source links → if they no longer agree, press Recheck & claim. Recent watches are read directly from accepted on-chain state.</p>
+        <div id="huntList" class="huntgrid"><div class="mono">Connect a wallet or refresh to load watches.</div></div>
+      </section>
     </div>
-    <div class="row" style="margin-top:16px">
-      <button id="openWatch" class="hot" disabled>Lock</button>
-      <button id="recheck" class="hot" disabled>Recheck</button>
-      <button id="refund" disabled>Refund</button>
-    </div>
-  </section>
-  <details id="log"><summary class="mono">Receipt</summary><pre id="out">Connect a Studio wallet.</pre></details>
-</div></main>
+
+    <aside>
+      <section class="card actionbox">
+        <div class="eyebrow">Current action</div>
+        <h3 id="actionTitle">Connect your wallet</h3>
+        <p id="actionText">Connect a Studio wallet to fund watches, hunt live signals and claim rewards.</p>
+        <div class="reward"><span id="rewardLabel">POTENTIAL REWARD</span><b id="rewardValue">—</b></div>
+        <button id="recheck" class="btn hot block" disabled>Recheck & claim</button>
+        <button id="refund" class="btn block" disabled>Refund expired watch</button>
+        <div class="field">
+          <label>WATCH ID</label>
+          <div class="row"><input id="watchId" placeholder="e.g. 3" inputmode="numeric"><button id="loadWatch" class="btn">Load</button></div>
+        </div>
+        <div id="ownerMeta" class="mono" style="font-size:10px;color:var(--muted);line-height:1.65"></div>
+        <div class="mono" style="font-size:9px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px">
+          Studionet · Contract 0x68d0…9E87<br>
+          Transactions may take a moment before the wallet prompt appears. Press an action only once.
+        </div>
+      </section>
+      <details class="card advanced">
+        <summary>Advanced / transaction receipt</summary>
+        <pre id="receipt" class="receipt">Connect a Studio wallet.</pre>
+      </details>
+    </aside>
+  </div>
+</div>
+
+<section id="trustStrip" style="margin-top:18px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+  <div class="metric"><small>01 / FUND</small><b>Lock a bounty while sources agree.</b></div>
+  <div class="metric"><small>02 / VERIFY</small><b>Anyone can recheck before expiry.</b></div>
+  <div class="metric"><small>03 / SETTLE</small><b>95% finder · 5% protocol.</b></div>
+</section>
+<div id="docsView" class="docs">
+  <aside><a href="#d1">01 / Create</a><a href="#d2">02 / Hunt</a><a href="#d3">03 / Claim</a><a href="#d4">04 / Refund</a><a href="#d5">05 / Limits</a></aside>
+  <article>
+    <section id="d1"><div class="eyebrow">01</div><h2>Create</h2><p>Choose two HTTPS pages and a token to watch. A watch opens only if both pages currently agree on whether that token is present. Your GEN bond remains locked until a split is found or the deadline expires.</p></section>
+    <section id="d2"><div class="eyebrow">02</div><h2>Hunt</h2><p>Anyone can inspect an open watch. The funder and finder do not need to be the same wallet. The bounty board surfaces recent on-chain watches without changing the contract.</p></section>
+    <section id="d3"><div class="eyebrow">03</div><h2>Claim</h2><p>Before the deadline, Recheck asks the contract to read both sources again. If their token-presence results differ, the watch becomes SPLIT and the caller is recorded as finder. 95% of the bond is paid to the finder and 5% to the protocol fee recipient.</p></section>
+    <section id="d4"><div class="eyebrow">04</div><h2>Refund</h2><p>If an OPEN watch reaches its deadline without a successful split, Refund returns the full bond to the original funder.</p></section>
+    <section id="d5"><div class="eyebrow">05</div><h2>Limits</h2><p>SplitSignal currently checks token presence in rendered HTML, not a structured numeric value. URLs must be HTTPS. Watch windows are 1–168 hours. The minimum bond is 0.01 GEN.</p></section>
+  </article>
+</div>
+</div>
+<div id="toast" class="toast"></div>
+
 <script type="module">
 import { createClient } from "https://esm.sh/genlayer-js@0.18.0?bundle";
 import { studionet } from "https://esm.sh/genlayer-js@0.18.0/chains?bundle";
-const CONTRACT = "0x68d058A66f486adeeF845785540f9056bc9E9E87";
-const ZERO = "0x0000000000000000000000000000000000000000";
-const out = document.querySelector("#out");
-let account = null, provider = null, current = null;
-const gen = (v) => (Number(v) / 1e18).toFixed(2) + " GEN";
-function show(v) { const text = typeof v === "string" ? v : JSON.stringify(v, null, 2); out.textContent = text; document.querySelector("#log").open = true; }
-function readClient() { return createClient({ chain: studionet, endpoint: "https://studio.genlayer.com/api", account: account || ZERO }); }
-function guide(text, step) {
-  document.querySelector("#guide").textContent = text;
-  ["s1","s2","s3","s4"].forEach((id) => document.getElementById(id).classList.toggle("on", id === step));
-}
-async function write(functionName, args, value = 0n) {
-  if (!account) throw new Error("Connect a wallet first.");
-  show("Sending " + functionName);
-  const c = createClient({ chain: studionet, account, provider });
-  await c.connect("studionet");
-  const tx = await c.writeContract({ address: CONTRACT, functionName, args, value });
-  show("Sent " + functionName + "\n" + (typeof tx === "string" ? tx : JSON.stringify(tx, null, 2)));
-  await board();
-  return tx;
-}
-async function watch(id) {
-  const raw = await readClient().readContract({ address: CONTRACT, functionName: "get_watch", args: [String(id)], stateStatus: "accepted" });
-  return typeof raw === "string" ? JSON.parse(raw) : raw;
-}
-function paint(rec) {
-  current = rec && rec.id ? rec : null;
-  document.querySelector("#title").textContent = current ? "Watch " + current.id : "No watch";
-  document.querySelector("#pill").textContent = current?.status || "—";
-  document.querySelector("#pill").className = "pill " + (current?.status || "");
-  document.querySelector("#leftVal").textContent = current?.left_value || "—";
-  document.querySelector("#rightVal").textContent = current?.right_value || "—";
-  document.querySelector("#leftUrl").textContent = current?.left_url || "";
-  document.querySelector("#rightUrl").textContent = current?.right_url || "";
-  document.querySelector("#mark").textContent = current?.left_value && current.left_value !== current.right_value ? "!=" : "=";
-  const end = current?.deadline ? new Date(current.deadline * 1000).toLocaleString() : "—";
-  document.querySelector("#meta").textContent = current ? current.field + " · " + gen(current.amount) + " · until " + end + " · " + current.note : "No watch loaded.";
-  const open = document.querySelector("#openWatch");
-  const recheck = document.querySelector("#recheck");
-  const refund = document.querySelector("#refund");
-  open.disabled = !account;
-  recheck.disabled = true;
-  refund.disabled = true;
-  if (!account) return guide("Connect a Studio wallet. The first step lights up.", "s1");
-  if (!current) return guide("Lock a window. Both pages must agree or the bond is not taken.", "s2");
-  const closed = Date.now() / 1000 >= Number(current.deadline);
-  if (current.status === "OPEN" && !closed) { recheck.disabled = false; return guide("Recheck is live. It pays only if the pages now differ.", "s3"); }
-  if (current.status === "OPEN" && closed) { refund.disabled = false; return guide("The window is closed. Refund returns the bond to the funder.", "s4"); }
-  if (current.status === "SPLIT") return guide("This watch paid the caller. Lock another pair to start again.", "s2");
-  if (current.status === "REFUNDED") return guide("This bond went back to the funder. Lock another pair to start again.", "s2");
-}
-async function board() {
-  const raw = await readClient().readContract({ address: CONTRACT, functionName: "next_watch", args: [], stateStatus: "accepted" });
-  const next = Number(String(raw).replace(/"/g, ""));
-  const id = document.querySelector("#id").value || String(Math.max(next - 1, 1));
-  const rec = await watch(id);
-  paint(rec && rec.id ? rec : null);
-  show(rec && rec.id ? rec : "No watch at id " + id);
-}
-document.querySelector("#connect").onclick = async () => {
-  try {
-    provider = window.ethereum;
-    if (!provider) return show("No wallet found.");
-    account = (await provider.request({ method: "eth_requestAccounts" }))[0];
-    document.querySelector("#connect").textContent = account.slice(0, 6) + "…" + account.slice(-4);
-    show("Connected " + account);
-    await board();
-  } catch (e) { show(e.message || String(e)); }
-};
-document.querySelector("#refresh").onclick = () => board().catch((e) => show(e.message || String(e)));
-document.querySelector("#openWatch").onclick = async () => {
-  try {
-    const value = BigInt(Math.round(Number(document.querySelector("#bond").value) * 1e6)) * 10n ** 12n;
-    await write("open_watch", [document.querySelector("#left").value.trim(), document.querySelector("#right").value.trim(), document.querySelector("#field").value.trim(), document.querySelector("#hours").value.trim()], value);
-  } catch (e) { show(e.message || String(e)); }
-};
-document.querySelector("#recheck").onclick = async () => { try { await write("recheck", [document.querySelector("#id").value]); } catch (e) { show(e.message || String(e)); } };
-document.querySelector("#refund").onclick = async () => { try { await write("refund", [document.querySelector("#id").value]); } catch (e) { show(e.message || String(e)); } };
-document.querySelector("#tabDocs").onclick = () => { document.querySelector("#docs").style.display = "block"; document.querySelector("#deskWrap").style.display = "none"; };
-document.querySelector("#tabDesk").onclick = () => { document.querySelector("#docs").style.display = "none"; document.querySelector("#deskWrap").style.display = "block"; };
-paint(null);
 
+const CONTRACT="0x68d058A66f486adeeF845785540f9056bc9E9E87";
+const ZERO="0x0000000000000000000000000000000000000000";
+let account=null,provider=null,current=null,busy=false,timer=null;
+const $=(s)=>document.querySelector(s);
+const short=(a)=>a&&a!==ZERO?a.slice(0,6)+"…"+a.slice(-4):"—";
+const genNum=(v)=>Number(v||0)/1e18;
+const fmtGen=(n,d=4)=>Number(n).toLocaleString(undefined,{maximumFractionDigits:d})+" GEN";
+const rewardOf=(v)=>genNum(v)*.95;
+const feeOf=(v)=>genNum(v)*.05;
+function readClient(){return createClient({chain:studionet,endpoint:"https://studio.genlayer.com/api",account:account||ZERO})}
+function toast(msg,error=false){const el=$("#toast");el.textContent=msg;el.className="toast show"+(error?" error":"");clearTimeout(el._t);el._t=setTimeout(()=>el.className="toast",4200)}
+function receipt(v){$("#receipt").textContent=typeof v==="string"?v:JSON.stringify(v,null,2)}
+function setBusy(v,label="Working…"){busy=v;["#openWatch","#recheck","#refund","#loadWatch","#reloadHunt"].forEach(s=>{const e=$(s);if(e)e.disabled=v||e.dataset.locked==="1"});if(v)toast(label)}
+async function write(functionName,args,value=0n){
+  if(!account)throw new Error("Connect a wallet first.");
+  setBusy(true,"Check your wallet — "+functionName);
+  receipt("Sending "+functionName+"…");
+  try{
+    const c=createClient({chain:studionet,account,provider});
+    await c.connect("studionet");
+    const tx=await c.writeContract({address:CONTRACT,functionName,args,value});
+    receipt("Submitted "+functionName+"\n"+(typeof tx==="string"?tx:JSON.stringify(tx,null,2)));
+    toast("Transaction submitted. Waiting for accepted state…");
+    await new Promise(r=>setTimeout(r,2500));
+    await loadLatestOrCurrent();
+    await updateBalance();
+    return tx;
+  }finally{busy=false;renderActions()}
+}
+async function watch(id){
+  const raw=await readClient().readContract({address:CONTRACT,functionName:"get_watch",args:[String(id)],stateStatus:"accepted"});
+  return typeof raw==="string"?JSON.parse(raw):raw
+}
+async function nextWatch(){
+  const raw=await readClient().readContract({address:CONTRACT,functionName:"next_watch",args:[],stateStatus:"accepted"});
+  return Number(String(raw).replace(/"/g,""))
+}
+function timeLeft(deadline){
+  if(!deadline)return "—";let s=Math.max(0,Number(deadline)-Math.floor(Date.now()/1000));
+  if(!s)return "Expired";const d=Math.floor(s/86400);s%=86400;const h=Math.floor(s/3600);s%=3600;const m=Math.floor(s/60);
+  return d?`${d}d ${h}h`:h?`${h}h ${m}m`:`${m}m`
+}
+function renderWatch(rec){
+  current=rec&&rec.id?rec:null;
+  $("#watchTitle").textContent=current?"Watch #"+current.id:"Choose or create a watch";
+  document.querySelector(".signal").classList.toggle("successGlow",current?.status==="SPLIT");
+  $("#status").textContent=current?.status||"—";$("#status").className="status "+(current?.status||"");
+  $("#leftValue").textContent=current?.left_value||"—";$("#rightValue").textContent=current?.right_value||"—";
+  $("#compare").textContent=current?.left_value&&current.left_value!==current.right_value?"≠":"=";
+  for(const [id,url] of [["#leftLink",current?.left_url],["#rightLink",current?.right_url]]){const e=$(id);e.textContent=url||"";e.href=url||"#"}
+  $("#metricBounty").textContent=current?fmtGen(genNum(current.amount),6):"—";
+  $("#metricFinder").textContent=current?fmtGen(rewardOf(current.amount),6):"—";
+  $("#metricField").textContent=current?.field||"—";
+  updateShare();$("#metricTime").textContent=current?timeLeft(current.deadline):"—";
+  $("#watchId").value=current?.id||$("#watchId").value;
+  $("#ownerMeta").innerHTML=current?`Funder&nbsp; ${short(current.funder)}<br>Finder&nbsp; ${short(current.finder)}<br>Note&nbsp;&nbsp;&nbsp; ${current.note||"—"}`:"";
+  renderActions()
+}
+function renderActions(){
+  const open=$("#openWatch"),re=$("#recheck"),rf=$("#refund");
+  open.disabled=busy||!account;re.disabled=true;rf.disabled=true;
+  open.textContent=account?"Create watch":"Connect wallet to create";
+  if(!account){$("#actionTitle").textContent="Connect your wallet";$("#actionText").textContent="Connect a Studio wallet to fund watches, hunt live signals and claim rewards.";$("#rewardValue").textContent="—";return}
+  if(!current){$("#actionTitle").textContent="Create or hunt";$("#actionText").textContent="Fund a new comparison or open Hunt signals to look for an active bounty.";$("#rewardValue").textContent="—";return}
+  const closed=Date.now()/1000>=Number(current.deadline);
+  $("#rewardValue").textContent=fmtGen(rewardOf(current.amount),6);
+  if(current.status==="OPEN"&&!closed){re.disabled=busy;$("#actionTitle").textContent="Hunt this signal";$("#actionText").textContent="Inspect both sources. If they have diverged, recheck before the deadline to claim 95%.";$("#rewardLabel").textContent="FINDER REWARD"}
+  else if(current.status==="OPEN"&&closed){rf.disabled=busy;$("#actionTitle").textContent="Window expired";$("#actionText").textContent="This watch stayed open through its deadline. Refund returns the bond to the funder.";$("#rewardLabel").textContent="LOCKED BOND";$("#rewardValue").textContent=fmtGen(genNum(current.amount),6)}
+  else if(current.status==="SPLIT"){$("#actionTitle").textContent="Signal found";$("#actionText").textContent=`${short(current.finder)} found the split and triggered payout.`;$("#rewardLabel").textContent="REWARD EARNED"}
+  else{$("#actionTitle").textContent="Bond refunded";$("#actionText").textContent="This watch has completed and the bond returned to its funder.";$("#rewardLabel").textContent="STATUS";$("#rewardValue").textContent="REFUNDED"}
+}
+async function loadId(id,quiet=false){if(!id)return;try{const r=await watch(id);if(r?.id){renderWatch(r);if(!quiet)receipt(r)}else if(!quiet)toast("No watch found at #"+id,true)}catch(e){if(!quiet){receipt(e.message||String(e));toast(e.message||String(e),true)}}}
+async function loadLatestOrCurrent(){const n=await nextWatch();const id=current?.id||Math.max(n-1,1);await loadId(id)}
+async function loadHunt(){
+  const box=$("#huntList");box.innerHTML='<div class="mono">Loading recent watches…</div>';
+  try{
+    const n=await nextWatch(),ids=[];for(let i=n-1;i>=1&&ids.length<12;i--)ids.push(i);
+    const rows=(await Promise.all(ids.map(i=>watch(i).catch(()=>null)))).filter(x=>x?.id);
+    const open=rows.filter(x=>x.status==="OPEN"&&Date.now()/1000<Number(x.deadline));
+    box.innerHTML="";
+    if(!open.length){box.innerHTML='<div class="mono">No recent open watches.</div>';return}
+    open.forEach(r=>{const el=document.createElement("div");el.className="watchrow";el.innerHTML=`<b>#${r.id}</b><div class="pair"><b>${r.field}</b><span>${r.left_url} ↔ ${r.right_url}</span></div><div class="bounty mono">${fmtGen(genNum(r.amount),4)}</div><div class="finder mono">${timeLeft(r.deadline)}</div>`;el.onclick=async()=>{await loadId(r.id);window.scrollTo({top:document.querySelector(".signal").getBoundingClientRect().top+scrollY-24,behavior:"smooth"})};box.appendChild(el)})
+  }catch(e){box.innerHTML='<div class="mono">Could not load watches.</div>';toast(e.message||String(e),true)}
+}
+function preview(){
+  const b=Math.max(0,Number($("#bond").value)||0);$("#pvLock").textContent=fmtGen(b,6);$("#pvFinder").textContent=fmtGen(b*.95,6);$("#pvFee").textContent=fmtGen(b*.05,6)
+}
+$("#bond").addEventListener("input",preview);
+document.querySelectorAll(".preset").forEach(b=>b.onclick=()=>{document.querySelectorAll(".preset").forEach(x=>x.classList.remove("active"));b.classList.add("active");$("#hours").value=b.dataset.hours});
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===b));const v=b.dataset.view;$("#docsView").classList.toggle("active",v==="docs");$("#appView").style.display=v==="docs"?"none":"block";$("#createView").classList.toggle("active",v==="create");$("#huntView").classList.toggle("active",v==="hunt");if(v==="hunt")loadHunt()});
+$("#connect").onclick=async()=>{try{provider=window.ethereum;if(!provider)throw new Error("No browser wallet found.");account=(await provider.request({method:"eth_requestAccounts"}))[0];$("#connect").textContent=short(account);toast("Wallet connected: "+short(account));await updateBalance();await loadLatestOrCurrent()}catch(e){receipt(e.message||String(e));toast(e.message||String(e),true)}};
+$("#openWatch").onclick=async()=>{try{if(!validateCreate())throw new Error("Check the highlighted fields.");const b=Number($("#bond").value);if(!Number.isFinite(b)||b<.01)throw new Error("Minimum bounty is 0.01 GEN.");const value=BigInt(Math.round(b*1e6))*10n**12n;await write("open_watch",[$("#left").value.trim(),$("#right").value.trim(),$("#field").value.trim(),$("#hours").value.trim()],value)}catch(e){receipt(e.message||String(e));toast(e.message||String(e),true)}};
+$("#recheck").onclick=async()=>{try{if(!current)throw new Error("Load a watch first.");await write("recheck",[String(current.id)])}catch(e){receipt(e.message||String(e));toast(e.message||String(e),true)}};
+$("#refund").onclick=async()=>{try{if(!current)throw new Error("Load a watch first.");await write("refund",[String(current.id)])}catch(e){receipt(e.message||String(e));toast(e.message||String(e),true)}};
+$("#loadWatch").onclick=()=>loadId($("#watchId").value.trim());
+$("#reloadHunt").onclick=loadHunt;
+
+
+async function updateBalance(){
+  if(!provider||!account){$("#balanceChip").textContent="Balance —";return}
+  try{
+    const raw=await provider.request({method:"eth_getBalance",params:[account,"latest"]});
+    const n=Number(BigInt(raw))/1e18;
+    $("#balanceChip").textContent="Balance "+n.toLocaleString(undefined,{maximumFractionDigits:4})+" GEN";
+  }catch{$("#balanceChip").textContent="Balance unavailable"}
+}
+function updateShare(){
+  const b=$("#shareWatch");
+  b.disabled=!current;
+  if(current){
+    const u=new URL(location.href);u.searchParams.set("watch",current.id);
+    b.dataset.url=u.toString();
+  }
+}
+async function shareCurrent(){
+  if(!current)return;
+  const url=$("#shareWatch").dataset.url;
+  try{
+    if(navigator.share)await navigator.share({title:"SplitSignal Watch #"+current.id,text:`Watch #${current.id} · ${current.field} · ${fmtGen(genNum(current.amount),6)}`,url});
+    else{await navigator.clipboard.writeText(url);toast("Watch link copied.")}
+  }catch(e){if(e?.name!=="AbortError")toast("Could not share watch.",true)}
+}
+async function health(){
+  try{
+    const n=await nextWatch();
+    $("#healthChip").textContent="● RPC online";
+    $("#latestChip").textContent="Latest watch #"+Math.max(n-1,0);
+  }catch{
+    $("#healthChip").textContent="● RPC unavailable";
+  }
+}
+$("#shareWatch").onclick=shareCurrent;
+$("#copyContract").onclick=async()=>{try{await navigator.clipboard.writeText(CONTRACT);toast("Contract address copied.")}catch{toast(CONTRACT)}};
+document.querySelectorAll(".bountyPreset").forEach(b=>b.onclick=()=>{$("#bond").value=b.dataset.bond;preview();validateCreate()});
+
+function validateCreate(){
+  const left=$("#left").value.trim(),right=$("#right").value.trim(),field=$("#field").value.trim(),bond=Number($("#bond").value);
+  const urlOk=u=>{try{return new URL(u).protocol==="https:"}catch{return false}};
+  const checks=[
+    [$("#left").closest(".field"),urlOk(left)],
+    [$("#right").closest(".field"),urlOk(right)],
+    [$("#field").closest(".field"),field.length>=3&&field.length<=32],
+    [$("#bond").closest(".field"),Number.isFinite(bond)&&bond>=.01]
+  ];
+  checks.forEach(([el,ok])=>{el.classList.toggle("invalid",!ok);el.classList.toggle("valid",ok)});
+  const ok=checks.every(x=>x[1])&&left!==right;
+  $("#formHint").textContent=!urlOk(left)||!urlOk(right)?"Use two valid HTTPS URLs.":left===right?"Source A and Source B must be different.":field.length<3?"Token must be at least 3 characters.":bond<.01?"Minimum bounty is 0.01 GEN.":"Ready: the contract will open only if both pages currently agree.";
+  if(account&&!busy)$("#openWatch").disabled=!ok;
+  return ok
+}
+["#left","#right","#field","#bond"].forEach(id=>$(id).addEventListener("input",()=>{preview();validateCreate()}));
+$("#useDemo").onclick=()=>{
+  $("#left").value="https://splitsignal-ten.vercel.app/left.html";
+  $("#right").value="https://splitsignal-ten.vercel.app/right.html";
+  $("#field").value="iana";$("#bond").value="0.01";$("#hours").value="1";
+  document.querySelectorAll(".preset").forEach(x=>x.classList.toggle("active",x.dataset.hours==="1"));
+  preview();validateCreate();toast("Demo loaded. Check that both demo pages agree before creating.");
+};
+$("#openLeft").onclick=()=>{if(current?.left_url)window.open(current.left_url,"_blank","noopener")};
+$("#openRight").onclick=()=>{if(current?.right_url)window.open(current.right_url,"_blank","noopener")};
+$("#watchId").addEventListener("keydown",e=>{if(e.key==="Enter")$("#loadWatch").click()});
+if(window.ethereum?.on){
+  window.ethereum.on("accountsChanged",async accounts=>{
+    account=accounts?.[0]||null;
+    $("#connect").textContent=account?short(account):"Connect wallet";
+    renderActions();validateCreate();
+    if(account){await updateBalance();await loadLatestOrCurrent();}else updateBalance();
+  });
+}
+
+timer=setInterval(()=>{if(current){$("#metricTime").textContent=timeLeft(current.deadline);renderActions()}},1000);
+preview();renderWatch(null);validateCreate();health();
+const deepWatch=new URL(location.href).searchParams.get("watch");
+if(deepWatch)loadId(deepWatch);
 </script>
 </body>
 </html>
