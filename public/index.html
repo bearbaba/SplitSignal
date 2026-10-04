@@ -63,9 +63,9 @@
     <article>
       <section id="law"><span class="mono">01</span><h2>The law</h2><p>Two https pages and one field. GEN travels with the lock. The contract is 0x9643A50a9645A3CF90CDC188b44f71Ec07C141b6 on Studionet.</p></section>
       <section id="open"><span class="mono">02</span><h2>Open</h2><p>A window opens only when both pages agree. A pair that already differs is rejected. The bond stays with the sender.</p></section>
-      <section id="pay"><span class="mono">03</span><h2>Pay</h2><p>Recheck can pay only before the deadline. If the pages differ, the caller receives 95 percent. Five percent goes to the deployer. Watch 4 did this: left yes, right no, status SPLIT.</p></section>
-      <section id="exit"><span class="mono">04</span><h2>Exit</h2><p>Refund can pay only after the deadline, and only while the watch is open. Watches 1 and 2 returned the bond to the funder.</p></section>
-      <section id="limit"><span class="mono">05</span><h2>Limit</h2><p>The check is token presence, not a value cut from the page. Watch 4 paid the same account that opened it. A second account has not caught a split.</p></section>
+      <section id="pay"><span class="mono">03</span><h2>Pay</h2><p>Recheck can pay only before the deadline. If the pages differ, the caller receives 95 percent. Five percent goes to the deployer. A successful split moves the watch to SPLIT before payout.</p></section>
+      <section id="exit"><span class="mono">04</span><h2>Exit</h2><p>Refund can pay only after the deadline, and only while the watch is open. The full bond returns to the funder after the deadline.</p></section>
+      <section id="limit"><span class="mono">05</span><h2>Limit</h2><p>The check is token presence, not a value cut from the page. The funder and the finder may be different accounts.</p></section>
     </article>
   </div>
 </div>
@@ -95,7 +95,7 @@
     <div class="row">
       <div style="flex:1"><label>BOND GEN</label><input id="bond" value="0.1" /></div>
       <div style="flex:1"><label>HOURS</label><input id="hours" value="1" /></div>
-      <div style="flex:1"><label>WATCH ID</label><input id="id" value="4" /></div>
+      <div style="flex:1"><label>WATCH ID</label><input id="id" value="" /></div>
     </div>
     <div class="row" style="margin-top:16px">
       <button id="openWatch" class="hot" disabled>Lock</button>
@@ -126,6 +126,7 @@ async function write(functionName, args, value = 0n) {
   await c.connect("studionet");
   const tx = await c.writeContract({ address: CONTRACT, functionName, args, value });
   show("Sent " + functionName + "\n" + (typeof tx === "string" ? tx : JSON.stringify(tx, null, 2)));
+  await board();
   return tx;
 }
 async function watch(id) {
@@ -188,6 +189,7 @@ document.querySelector("#refund").onclick = async () => { try { await write("ref
 document.querySelector("#tabDocs").onclick = () => { document.querySelector("#docs").style.display = "block"; document.querySelector("#deskWrap").style.display = "none"; };
 document.querySelector("#tabDesk").onclick = () => { document.querySelector("#docs").style.display = "none"; document.querySelector("#deskWrap").style.display = "block"; };
 paint(null);
+
 </script>
 </body>
 </html>

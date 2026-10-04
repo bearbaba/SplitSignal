@@ -1,11 +1,69 @@
 # SplitSignal
 
-Studionet contract `0x9643A50a9645A3CF90CDC188b44f71Ec07C141b6`.
+SplitSignal is a GenLayer intelligent contract that watches two HTTPS pages for a token-presence split.
 
-A watch opens only when two https pages contain the same field token. The bond is the transaction value. Recheck pays the caller 95 percent if the pages differ before the deadline. Five percent goes to the deployer. Refund returns an open bond to the funder after the deadline.
+## Contract behavior
 
-Proven on this contract: watches 1 and 2 were refunded after the window. Watch 4 opened on two pages that both contained `iana`, then the right page was changed. Recheck returned left `yes`, right `no`, status `SPLIT`. The funder and finder were the same account.
+A watch is created only when:
 
-Not proven: a second account catching the split. The check is token presence, not a value cut from the page. An older pool contract at `0x07aeE113dD0248DB23BC0259ba1197D0cFC9e15b` is a different book.
+- both URLs are HTTPS;
+- the URLs are different after normalization;
+- the field token is 3-32 characters;
+- the watch window is 1-168 hours;
+- the bond is at least `10**16`;
+- both pages are readable;
+- both pages currently contain the requested token.
 
-App: https://splitsignal-ten.vercel.app/
+The contract records the matching `yes/yes` observation and opens the watch.
+
+A later `recheck()` compares the same two pages:
+
+- `yes/yes` keeps the watch `OPEN`;
+- `yes/no` or `no/yes` changes it to `SPLIT`;
+- the account that performs the successful recheck becomes the `finder`;
+- 95% of the bond is paid to the finder;
+- 5% is paid to the deployer's `fee_to` address;
+- the state is written as `SPLIT` before the payout calls, preventing a second successful payout.
+
+If the watch reaches its deadline while still `OPEN`, anyone may call `refund()` and the original funder receives the full bond.
+
+## Important scope
+
+The contract checks **token presence**, not a numeric value extracted from a page.
+
+For example, the field `iana` is treated as:
+
+- `yes` if the normalized rendered page contains the token;
+- `no` otherwise.
+
+This is intentionally a small, auditable proof primitive rather than a general web scraper.
+
+## Tests
+
+The local Direct Mode suite covers:
+
+- URL and field validation;
+- malformed window input;
+- window bounds;
+- minimum bond;
+- unreadable pages;
+- normalized URLs;
+- opening only when both pages agree;
+- matching pages remaining `OPEN`;
+- a different account catching a split;
+- finder/funder attribution;
+- one-time split settlement;
+- deadline-gated refund;
+- exact 5% fee / 95% finder arithmetic.
+
+The current local suite passes completely.
+
+Direct Mode does not execute the `EthSend` operation used by the contract's transfer interface, so local tests verify the payout-triggering state transition and accounting invariants rather than pretending to prove network balance movement. Actual payout/refund settlement must be verified on the deployed network.
+
+## Deployment
+
+The frontend is configured separately from the contract address. After a new deployment, update the configured contract address in the public app before publishing.
+
+## App
+
+https://splitsignal-ten.vercel.app/

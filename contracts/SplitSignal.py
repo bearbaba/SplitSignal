@@ -50,16 +50,22 @@ class SplitSignal(gl.Contract):
 
     def _https(self, url: str) -> str:
         raw = url.strip()
-        if not raw.startswith("https://") or " " in raw:
+        if not raw.startswith("https://") or any(ch.isspace() for ch in raw):
             raise Exception("https url required")
+
         body = raw[8:]
         body = body.split("#", 1)[0]
-        if body.endswith("/"):
-            body = body[:-1]
-        host, _, rest = body.partition("/")
+
+        host, sep, rest = body.partition("/")
+        if not host or host.startswith(".") or host.endswith("."):
+            raise Exception("https url required")
+        if ":" in host:
+            raise Exception("https url required")
+
         out = "https://" + host.lower()
-        if rest:
-            out += "/" + rest
+        if sep and rest:
+            out += "/" + rest.rstrip("/")
+
         return out
 
     def _hit(self, text: str, field: str) -> str:
@@ -92,7 +98,12 @@ class SplitSignal(gl.Contract):
         left = self._https(left_url)
         right = self._https(right_url)
         key = field.strip().lower()
-        window = int(hours)
+
+        try:
+            window = int(hours.strip())
+        except Exception:
+            raise Exception("window must be an integer")
+
         bond = int(gl.message.value)
         if left == right:
             raise Exception("two different urls required")
