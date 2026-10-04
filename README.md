@@ -67,3 +67,21 @@ The frontend is configured separately from the contract address. After a new dep
 ## App
 
 https://splitsignal-ten.vercel.app/
+
+## Project Evidence
+
+### SplitSignal workflow
+
+Create → Hunt → Claim → Refund.
+
+![SplitSignal workflow](public/evidence/splitsignal-flow.png)
+
+The live application explains the complete Watch lifecycle, including protocol limits and bounty settlement.
+
+### GenLayer Intelligent Contract
+
+- Contract: `0x68d058A66f486adeeF845785540f9056bc9E9E87`
+- Explorer: https://explorer-studio.genlayer.com/address/0x68d058A66f486adeeF845785540f9056bc9E9E87
+- Live app: https://splitsignalv2.vercel.app/
+
+The GenLayer Studio Explorer shows finalized and accepted deployment, `open_watch`, and `recheck` transactions.
