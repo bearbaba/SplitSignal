@@ -125,8 +125,8 @@ nav{display:flex;align-items:center;justify-content:space-between;gap:16px}.bran
           <span class="mono" style="font-size:10px;color:var(--muted)">New here? Load a working example first.</span>
         </div>
         <div class="formgrid">
-          <div class="field span2"><label>SOURCE A URL · MUST BE PUBLIC</label><input id="left" value="https://splitsignal-ten.vercel.app/left.html" placeholder="https://site-a.com/page"></div>
-          <div class="field span2"><label>SOURCE B URL · MUST BE PUBLIC</label><input id="right" value="https://splitsignal-ten.vercel.app/right.html" placeholder="https://site-b.com/page"></div>
+          <div class="field span2"><label>SOURCE A URL · MUST BE PUBLIC</label><input id="left" value="https://splitsignalv2.vercel.app/left.html" placeholder="https://site-a.com/page"></div>
+          <div class="field span2"><label>SOURCE B URL · MUST BE PUBLIC</label><input id="right" value="https://splitsignalv2.vercel.app/right.html" placeholder="https://site-b.com/page"></div>
           <div class="field"><label>WORD / TOKEN TO WATCH</label><input id="field" value="iana" maxlength="32" placeholder="e.g. approved"></div>
           <div class="field"><label>BOUNTY · GEN</label><input id="bond" value="0.01" inputmode="decimal"><div class="presets" style="margin-top:9px"><button class="btn bountyPreset" data-bond=".01">0.01</button><button class="btn bountyPreset" data-bond=".05">0.05</button><button class="btn bountyPreset" data-bond=".1">0.10</button><button class="btn bountyPreset" data-bond="1">1 GEN</button></div></div>
           <div class="field span2">
@@ -409,8 +409,8 @@ function validateCreate(){
 }
 ["#left","#right","#field","#bond"].forEach(id=>$(id).addEventListener("input",()=>{preview();validateCreate()}));
 $("#useDemo").onclick=()=>{
-  $("#left").value="https://splitsignal-ten.vercel.app/left.html";
-  $("#right").value="https://splitsignal-ten.vercel.app/right.html";
+  $("#left").value="https://splitsignalv2.vercel.app/left.html";
+  $("#right").value="https://splitsignalv2.vercel.app/right.html";
   $("#field").value="iana";$("#bond").value="0.01";$("#hours").value="1";
   document.querySelectorAll(".preset").forEach(x=>x.classList.toggle("active",x.dataset.hours==="1"));
   preview();validateCreate();toast("Demo loaded. Check that both demo pages agree before creating.");
