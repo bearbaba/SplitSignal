@@ -1,118 +1,269 @@
 # SplitSignal
 
-SplitSignal is a GenLayer intelligent contract that watches two HTTPS pages for a token-presence split.
+**A permissionless bounty protocol that rewards anyone who verifies when two public sources stop agreeing.**
 
-## Contract behavior
+SplitSignal is built on GenLayer and turns public-source divergence into a verifiable, economically incentivized signal.
 
-A watch is created only when:
+Users create a Watch by choosing two public HTTPS sources, a signal to monitor, an active duration, and a GEN bounty. The Intelligent Contract only opens the Watch when both sources initially agree.
 
-- both URLs are HTTPS;
-- the URLs are different after normalization;
-- the field token is 3-32 characters;
-- the watch window is 1-168 hours;
-- the bond is at least `10**16`;
-- both pages are readable;
-- both pages currently contain the requested token.
+Anyone can recheck the Watch while it is active. If GenLayer verifies that the two sources have diverged, the Watch becomes `SPLIT` and the finder reward is triggered. If no divergence is verified before expiry, the funder can reclaim the bounty.
 
-The contract records the matching `yes/yes` observation and opens the watch.
+## Live Project
 
-A later `recheck()` compares the same two pages:
-
-- `yes/yes` keeps the watch `OPEN`;
-- `yes/no` or `no/yes` changes it to `SPLIT`;
-- the account that performs the successful recheck becomes the `finder`;
-- 95% of the bond is paid to the finder;
-- 5% is paid to the deployer's `fee_to` address;
-- the state is written as `SPLIT` before the payout calls, preventing a second successful payout.
-
-If the watch reaches its deadline while still `OPEN`, anyone may call `refund()` and the original funder receives the full bond.
-
-## Important scope
-
-The contract checks **token presence**, not a numeric value extracted from a page.
-
-For example, the field `iana` is treated as:
-
-- `yes` if the normalized rendered page contains the token;
-- `no` otherwise.
-
-This is intentionally a small, auditable proof primitive rather than a general web scraper.
-
-## Tests
-
-The local Direct Mode suite covers:
-
-- URL and field validation;
-- malformed window input;
-- window bounds;
-- minimum bond;
-- unreadable pages;
-- normalized URLs;
-- opening only when both pages agree;
-- matching pages remaining `OPEN`;
-- a different account catching a split;
-- finder/funder attribution;
-- one-time split settlement;
-- deadline-gated refund;
-- exact 5% fee / 95% finder arithmetic.
-
-The current local suite passes completely.
-
-Direct Mode does not execute the `EthSend` operation used by the contract's transfer interface, so local tests verify the payout-triggering state transition and accounting invariants rather than pretending to prove network balance movement. Actual payout/refund settlement must be verified on the deployed network.
-
-## Deployment
-
-The frontend is configured separately from the contract address. After a new deployment, update the configured contract address in the public app before publishing.
-
-## App
-
-https://splitsignalv2.vercel.app/
-
-## Project Evidence
-
-### SplitSignal workflow
-
-Create → Hunt → Claim → Refund.
-
-The live application explains the complete Watch lifecycle, including protocol limits and bounty settlement.
-
-### GenLayer Intelligent Contract
-
-- Contract: `0x68d058A66f486adeeF845785540f9056bc9E9E87`
+- App: https://splitsignalv2.vercel.app/
+- Demo video: https://youtu.be/Rzw-AcIbncc
+- GitHub: https://github.com/bearbaba/SplitSignal
 - Explorer: https://explorer-studio.genlayer.com/address/0x68d058A66f486adeeF845785540f9056bc9E9E87
-- Live app: https://splitsignalv2.vercel.app/
+- Studio: https://studio.genlayer.com/?import-contract=0x68d058A66f486adeeF845785540f9056bc9E9E87
 
-The GenLayer Studio Explorer shows finalized and accepted deployment, `open_watch`, and `recheck` transactions.
+## Intelligent Contract
+
+`0x68d058A66f486adeeF845785540f9056bc9E9E87`
+
+Deployed on GenLayer Studionet.
 
 ## Why GenLayer
 
-SplitSignal needs more than a traditional smart contract. The protocol must read public web sources, compare real-world information, reach validator consensus on the observation, and then enforce the result on-chain.
+SplitSignal needs more than a traditional deterministic smart contract.
 
-GenLayer is central to that workflow.
+Its core workflow depends on reading public web sources, observing whether a monitored signal is present, comparing the two sources, reaching validator consensus, and then enforcing the result on-chain.
 
-## 60-second demo
+GenLayer is central to the product because it allows the contract to read public HTTPS sources, evaluate real-world web content, reach consensus on the observation, update Watch state, and trigger settlement from the verified result.
 
-1. Open the live app and connect a wallet.
+Without GenLayer, SplitSignal would need a centralized oracle or trusted backend to decide whether the two sources still agree.
+
+## How It Works
+
+1. A user creates a Watch.
+2. Two public sources are selected.
+3. The sources must initially agree.
+4. A GEN bounty becomes active.
+5. Anyone can recheck the Watch while it is active.
+6. GenLayer reads both sources again.
+7. If they still agree, the Watch remains `OPEN`.
+8. If they diverge, the Watch becomes `SPLIT`.
+9. The finder receives 95% of the bounty.
+10. The protocol receives a 5% fee.
+11. If no split is verified before expiry, the funder can reclaim the bounty.
+
+## Active Duration
+
+The selected duration is how long the bounty stays open.
+
+It is **not** a waiting period.
+
+A Watch can be rechecked immediately after creation or at any later point before expiry.
+
+For example, if a Watch is active for 24 hours and Source B changes after only two minutes, anyone can recheck it immediately. If GenLayer verifies that the two sources now disagree, the Watch can become `SPLIT` right away.
+
+The active duration simply defines how long the bounty remains available before expiry.
+
+## Bounty Economics
+
+- Minimum bounty: `0.01 GEN`
+- Finder reward: `95%`
+- Protocol fee: `5%`
+- Expired OPEN Watch: the funder can reclaim the bounty
+
+The reward is paid for verifying a divergence, not for waiting a fixed amount of time.
+
+## Guided Demo
+
+The live app includes a guided demo flow.
+
+1. Connect a wallet.
 2. Click **Try demo**.
-3. Create the demo Watch while both sources match.
-4. Click **Change Source B**.
-5. Recheck the Watch.
-6. If GenLayer verifies the divergence, the Watch becomes `SPLIT` and the finder reward is triggered.
+3. Two public demo sources are created with matching values.
+4. Create the Watch.
+5. Click **Change Source B**.
+6. Recheck the Watch.
+7. GenLayer reads both public sources again.
+8. The divergence is verified.
+9. The Watch becomes `SPLIT`.
+10. The finder reward is triggered.
 
-Live app: https://splitsignalv2.vercel.app/
+The demo sources are public so GenLayer validators can independently inspect the same content.
 
-Contract:
-`0x68d058A66f486adeeF845785540f9056bc9E9E87`
+## Watch Lifecycle
 
-Explorer:
-https://explorer-studio.genlayer.com/address/0x68d058A66f486adeeF845785540f9056bc9E9E87
+### OPEN
+
+The Watch is active and no verified divergence has been recorded yet.
+
+### SPLIT
+
+GenLayer verified that the monitored sources no longer agree.
+
+The successful verifier becomes the finder and the payout is triggered.
+
+### REFUNDED
+
+The Watch expired without a verified split and the funder reclaimed the bounty.
+
+## Discovering Watches
+
+The frontend supports:
+
+- recent Watches
+- open bounty discovery
+- ending-soon sorting
+- highest-bounty sorting
+- My Watches
+- My Claims
+- All Watches
+- pagination through historical Watches
+- direct lookup by Watch ID
+
+Historical Watches remain stored in the contract even if they are no longer visible on the first page.
+
+## Trust Boundary
+
+SplitSignal verifies **whether two public sources agree or disagree**.
+
+It does not determine which source represents absolute truth.
+
+For example:
+
+Source A says:
+
+`yes`
+
+Source B says:
+
+`no`
+
+SplitSignal can verify:
+
+`Source A != Source B`
+
+It does not claim that `yes` or `no` is objectively correct.
+
+This distinction is intentional.
+
+SplitSignal is designed as a monitoring and bounty primitive for detecting changes or conflicts across public information sources.
+
+## Potential Use Cases
+
+SplitSignal can be used to monitor:
+
+- public announcements
+- governance pages
+- status pages
+- API outputs
+- terms and policy pages
+- public datasets
+- project documentation
+- protocol information
+- mirrored information sources
+- public records where disagreement itself is meaningful
+
+The core question is simple:
+
+> When two public sources stop agreeing, who notices first?
+
+## Main Contract Actions
+
+### `open_watch`
+
+Creates a new Watch when both public sources initially agree.
+
+The call includes:
+
+- Source A URL
+- Source B URL
+- monitored field or token
+- active duration
+- GEN bounty
+
+### `recheck`
+
+Reads both sources again.
+
+If the observations diverge while the Watch is still active:
+
+- status becomes `SPLIT`
+- finder becomes the caller
+- 95% of the bounty goes to the finder
+- 5% goes to the protocol
+
+Settlement happens as part of the successful recheck flow.
+
+### `refund`
+
+After an OPEN Watch expires, the original funder can reclaim the bounty.
+
+### `get_watch`
+
+Returns the stored state for a specific Watch ID.
+
+## Frontend Transaction Flow
+
+The frontend tracks the transaction lifecycle from wallet approval to confirmed on-chain state.
+
+The basic flow is:
+
+`Waiting for wallet → Submitted → Confirming → Confirmed`
+
+After confirmation, the frontend reloads the accepted Watch state instead of assuming the result locally.
 
 ## Architecture
 
-User
-→ SplitSignal UI
-→ GenLayer Intelligent Contract
-→ Public Source A + Public Source B
-→ Validator consensus
-→ OPEN / SPLIT / REFUNDED
-→ Bounty settlement
+User  
+↓  
+SplitSignal Frontend  
+↓  
+GenLayer Intelligent Contract  
+↓  
+Public Source A + Public Source B  
+↓  
+Validator Consensus  
+↓  
+Watch State  
+↓  
+`OPEN / SPLIT / REFUNDED`  
+↓  
+Economic Settlement
+
+## Product Principles
+
+SplitSignal is designed around a few simple ideas:
+
+- public evidence
+- verifiable divergence
+- permissionless rechecking
+- economic incentive for discovery
+- consensus-based settlement
+- no trusted operator deciding the result
+- expiry and refund so funds are not locked forever
+
+## Current Scope
+
+SplitSignal is currently deployed on GenLayer Studionet.
+
+The complete product flow is:
+
+`Create → Monitor → Detect → Recheck → Verify → Reward`
+
+The current version demonstrates the full end-to-end protocol loop with a real Intelligent Contract, wallet interaction, public source inspection, transaction lifecycle handling, bounty settlement, Watch discovery, history browsing, direct Watch lookup, and a reproducible guided demo.
+
+For larger-scale production use, future improvements could include dedicated indexing, source-quality reputation, analytics, alerts, and additional anti-spam systems.
+
+Those are scaling improvements. The core protocol flow already works end to end.
+
+## Project Links
+
+- Live app: https://splitsignalv2.vercel.app/
+- Demo video: https://youtu.be/Rzw-AcIbncc
+- GitHub: https://github.com/bearbaba/SplitSignal
+- Contract Explorer: https://explorer-studio.genlayer.com/address/0x68d058A66f486adeeF845785540f9056bc9E9E87
+- Studio import: https://studio.genlayer.com/?import-contract=0x68d058A66f486adeeF845785540f9056bc9E9E87
+
+## Status
+
+SplitSignal is live on GenLayer Studionet and the end-to-end flow has been tested successfully:
+
+`Create Watch → Sources Match → Change Source B → Recheck → SPLIT → Finder Reward`
+
+---
+
+**SplitSignal — Watch. Verify. Reward.**
