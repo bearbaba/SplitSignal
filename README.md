@@ -66,7 +66,7 @@ The frontend is configured separately from the contract address. After a new dep
 
 ## App
 
-https://splitsignal-ten.vercel.app/
+https://splitsignalv2.vercel.app/
 
 ## Project Evidence
 

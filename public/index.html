@@ -75,8 +75,8 @@ nav{display:flex;align-items:center;justify-content:space-between;gap:16px}.bran
 </header>
 
 <div class="tabs">
-  <button class="btn tab active" data-view="create">＋ Create watch</button>
-  <button class="btn tab" data-view="hunt">◎ Find bounties</button>
+  <button class="btn tab active" data-view="create">＋ Create Watch</button>
+  <button class="btn tab" data-view="hunt">◎ Find Bounties</button>
   <button class="btn tab" data-view="docs">? How it works</button>
 </div>
 <div class="row" style="justify-content:space-between;margin:-8px 0 18px">
@@ -122,13 +122,13 @@ nav{display:flex;align-items:center;justify-content:space-between;gap:16px}.bran
         <div class="cardhead"><div><div class="eyebrow">Fund a signal</div><h2>Create a watch</h2></div><span class="chip">HTTPS ONLY</span></div>
         <p class="mono" style="color:var(--muted);font-size:11px;line-height:1.6;margin:-6px 0 16px">Choose two public pages that currently agree, then enter the word or token you want SplitSignal to watch.</p>
         <div class="row" style="margin-bottom:12px">
-          <button id="useDemo" class="btn">Use safe demo</button>
-          <span class="mono" style="font-size:10px;color:var(--muted)">New here? Load a working example first.</span>
+          <button id="useDemo" class="btn">Try demo</button>
+          <span class="mono" style="font-size:10px;color:var(--muted)">New here? Try the guided demo: create → change source → recheck.</span>
         </div>
         <div class="formgrid">
-          <div class="field span2"><label>SOURCE A URL · MUST BE PUBLIC</label><input id="left" value="https://splitsignalv2.vercel.app/left.html" placeholder="https://site-a.com/page"></div>
-          <div class="field span2"><label>SOURCE B URL · MUST BE PUBLIC</label><input id="right" value="https://splitsignalv2.vercel.app/right.html" placeholder="https://site-b.com/page"></div>
-          <div class="field"><label>WORD / TOKEN TO WATCH</label><input id="field" value="iana" maxlength="32" placeholder="e.g. approved"></div>
+          <div class="field span2"><label>SOURCE A</label><input id="left" value="" placeholder="https://site-a.com/page"></div>
+          <div class="field span2"><label>SOURCE B</label><input id="right" value="" placeholder="https://site-b.com/page"></div>
+          <div class="field"><label>WHAT SHOULD WE WATCH?</label><input id="field" value="iana" maxlength="32" placeholder="e.g. approved"></div>
           <div class="field"><label>BOUNTY · GEN</label><input id="bond" value="0.01" inputmode="decimal"><div class="presets" style="margin-top:9px"><button class="btn bountyPreset" data-bond=".01">0.01</button><button class="btn bountyPreset" data-bond=".05">0.05</button><button class="btn bountyPreset" data-bond=".1">0.10</button><button class="btn bountyPreset" data-bond="1">1 GEN</button></div></div>
           <div class="field span2">
             <label>WATCH WINDOW</label>
@@ -152,7 +152,7 @@ nav{display:flex;align-items:center;justify-content:space-between;gap:16px}.bran
 
       <section id="huntView" class="card hunt">
         <div class="cardhead"><div><div class="eyebrow">Open bounty board</div><h2>Find a bounty</h2></div><button id="reloadHunt" class="btn">Refresh</button></div>
-        <p class="mono" style="color:var(--muted);font-size:11px;line-height:1.6">Pick an OPEN watch → inspect both sources → if they no longer agree, press Recheck & claim. Everything below is read from accepted on-chain state.</p>
+        <p class="mono" style="color:var(--muted);font-size:11px;line-height:1.6">Pick an OPEN watch → inspect both sources → if they no longer agree, press Recheck & claim. Choose a Watch to inspect its sources and bounty.</p>
         <div class="statbar">
           <div class="statbox"><small>OPEN</small><b id="statOpen">—</b></div>
           <div class="statbox"><small>MY WATCHES</small><b id="statMine">—</b></div>
@@ -176,7 +176,7 @@ nav{display:flex;align-items:center;justify-content:space-between;gap:16px}.bran
         <div class="reward"><span id="rewardLabel">POTENTIAL REWARD</span><b id="rewardValue">—</b></div>
         <button id="recheck" class="btn hot block" disabled>Recheck & claim</button>
         <button id="refund" class="btn block" disabled>Refund expired watch</button>
-        <button id="reloadState" class="btn block" disabled>Reload on-chain state</button>
+        <button id="reloadState" class="btn block" disabled>Refresh Watch</button>
         <div class="field">
           <label>WATCH ID</label>
           <div class="row"><input id="watchId" placeholder="e.g. 3" inputmode="numeric"><button id="loadWatch" class="btn">Load</button></div>
@@ -188,7 +188,7 @@ nav{display:flex;align-items:center;justify-content:space-between;gap:16px}.bran
         </div>
       </section>
       <details class="card advanced">
-        <summary>Advanced / transaction receipt</summary>
+        <summary>Advanced details</summary>
         <pre id="receipt" class="receipt">Connect a Studio wallet.</pre>
       </details>
     </aside>
@@ -276,7 +276,7 @@ async function submitWrite(functionName,args,value=0n){
   lastTxHash=typeof tx==="string"?tx:null;
   receipt("Submitted "+functionName+"\n"+(typeof tx==="string"?tx:JSON.stringify(tx,null,2)));
   setTxState("● Submitted");
-  toast("Transaction submitted. Waiting for accepted on-chain state…");
+  toast("Transaction submitted. Confirming…");
   return tx;
 }
 
@@ -445,7 +445,7 @@ function renderHunt(){
   })
 }
 async function loadHunt(){
-  const box=$("#huntList");box.innerHTML='<div class="mono">Loading recent on-chain activity…</div>';
+  const box=$("#huntList");box.innerHTML='<div class="mono">Loading recent activity…</div>';
   try{
     const n=await nextWatch(),ids=[];for(let i=n-1;i>=1&&ids.length<30;i--)ids.push(i);
     boardRows=(await Promise.all(ids.map(i=>watch(i).catch(()=>null)))).filter(x=>x?.id);
@@ -489,12 +489,12 @@ $("#openWatch").onclick=async()=>{
       value
     );
 
-    setTxState("● Waiting for accepted state");
+    setTxState("● Confirming");
 
     const rec=await waitForNewWatch(beforeN,expected);
 
     if(!rec){
-      throw new Error("Transaction was submitted, but no new accepted Watch appeared within 90 seconds. Use Reload on-chain state or check Advanced receipt.");
+      throw new Error("Transaction was submitted, but no new accepted Watch appeared within 90 seconds. Use Refresh Watch or check Advanced receipt.");
     }
 
     renderWatch(rec);
@@ -522,7 +522,7 @@ $("#recheck").onclick=async()=>{
     if(!before)throw new Error("Load a watch first.");
 
     await submitWrite("recheck",[String(before.id)]);
-    setTxState("● Waiting for accepted state");
+    setTxState("● Confirming");
 
     const result=await waitForWatchState(before.id,before);
     if(result.rec?.id)renderWatch(result.rec);
@@ -535,11 +535,11 @@ $("#recheck").onclick=async()=>{
       receipt(result.rec);
       toast(result.rec.status==="SPLIT"
         ?"SPLIT confirmed. Finder payout triggered."
-        :"Accepted state updated.");
+        :"Watch updated.");
     }else{
       setTxState("● Submitted · no state change yet");
       receipt(result.rec||before);
-      toast("No accepted state change detected yet. Sources may still match, or the transaction may still be processing.");
+      toast("No change detected yet. The sources may still match, or the transaction may still be confirming.");
     }
   }catch(e){
     receipt(e.message||String(e));
@@ -558,7 +558,7 @@ $("#refund").onclick=async()=>{
     if(before.funder?.toLowerCase()!==account?.toLowerCase())throw new Error("Connect the funder wallet to trigger this refund.");
 
     await submitWrite("refund",[String(before.id)]);
-    setTxState("● Waiting for accepted state");
+    setTxState("● Confirming");
 
     const result=await waitForWatchState(before.id,before);
 
@@ -569,10 +569,10 @@ $("#refund").onclick=async()=>{
     if(result.rec?.status==="REFUNDED"){
       setTxState("● Confirmed · Refunded");
       receipt(result.rec);
-      toast("Refund confirmed on accepted state.");
+      toast("Refund confirmed.");
     }else{
       setTxState("● Submitted · waiting");
-      toast("Refund submitted. Reload on-chain state if acceptance is still pending.");
+      toast("Refund submitted. Refresh Watch if acceptance is still pending.");
     }
   }catch(e){
     receipt(e.message||String(e));
@@ -664,7 +664,7 @@ $("#openRight").onclick=()=>openSource("right");
 
 $("#reloadState").onclick=async()=>{
   if(!current)return;
-  setTxState("● Reloading accepted state");
+  setTxState("● Refreshing");
   await loadId(current.id);
   await loadHunt();
   await updateBalance();
@@ -729,7 +729,7 @@ async function startSafeDemo(){
   validateCreate();
   updateDemoPanel("ready");
 
-  toast("Demo ready. Both sources currently match.");
+  toast("Demo ready. Both sources match.");
 }
 
 function ensureDemoPanel(){
@@ -752,6 +752,9 @@ function ensureDemoPanel(){
         <div class="eyebrow">SAFE DEMO</div>
         <div id="demoMessage" style="margin-top:6px;font-size:14px">
           Both sources match.
+        </div>
+        <div class="mono" style="margin-top:8px;font-size:10px;color:var(--muted)">
+          1. Create Watch&nbsp;&nbsp;→&nbsp;&nbsp;2. Change Source B&nbsp;&nbsp;→&nbsp;&nbsp;3. Recheck
         </div>
       </div>
 
@@ -793,13 +796,13 @@ function updateDemoPanel(state){
   if(state==="changed"){
     $("#demoA").textContent="MATCH";
     $("#demoB").textContent="CHANGED";
-    $("#demoMessage").textContent="Source B changed. Recheck the Watch to verify the split.";
+    $("#demoMessage").textContent="Source B changed. Recheck the Watch to claim the bounty.";
     $("#flipDemo").disabled=true;
     $("#flipDemo").textContent="Source changed";
   }else{
     $("#demoA").textContent="MATCH";
     $("#demoB").textContent="MATCH";
-    $("#demoMessage").textContent="Both sources currently agree. Create the Watch first.";
+    $("#demoMessage").textContent="Both sources match. Create the Watch, then change Source B.";
     $("#flipDemo").disabled=false;
     $("#flipDemo").textContent="Change demo source";
   }
@@ -824,7 +827,7 @@ async function flipDemoSource(){
     if(!j.ok) throw new Error(j.error||"Could not change demo source.");
 
     updateDemoPanel("changed");
-    toast("Source B changed. You can Recheck & Claim now.");
+    toast("Source B changed. Recheck now.");
   }catch(e){
     $("#flipDemo").disabled=false;
     $("#flipDemo").textContent="Change demo source";
