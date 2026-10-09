@@ -693,6 +693,156 @@ $("#shareWin").onclick=async()=>{
   }catch(e){if(e?.name!=="AbortError")toast("Could not share.",true)}
 };
 
+
+let demoId=null;
+
+function newDemoId(){
+  if(crypto.randomUUID) return crypto.randomUUID().replaceAll("-","").slice(0,20);
+  return Math.random().toString(36).slice(2)+Date.now().toString(36);
+}
+
+async function startSafeDemo(){
+  demoId=newDemoId();
+
+  const base=location.origin;
+  const left=`${base}/api/demo-source?id=${demoId}&side=left`;
+  const right=`${base}/api/demo-source?id=${demoId}&side=right`;
+
+  const r=await fetch(`/api/demo-reset?id=${encodeURIComponent(demoId)}`,{
+    method:"POST"
+  });
+
+  const j=await r.json();
+  if(!j.ok) throw new Error(j.error||"Could not prepare demo.");
+
+  $("#left").value=left;
+  $("#right").value=right;
+  $("#field").value="iana";
+  $("#bond").value="0.01";
+  $("#hours").value="1";
+
+  document.querySelectorAll(".preset").forEach(x=>
+    x.classList.toggle("active",x.dataset.hours==="1")
+  );
+
+  preview();
+  validateCreate();
+  updateDemoPanel("ready");
+
+  toast("Demo ready. Both sources currently match.");
+}
+
+function ensureDemoPanel(){
+  if($("#demoPanel")) return;
+
+  const box=document.createElement("div");
+  box.id="demoPanel";
+  box.style.cssText=`
+    display:none;
+    margin-top:14px;
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:16px;
+    background:rgba(255,255,255,.02)
+  `;
+
+  box.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div>
+        <div class="eyebrow">SAFE DEMO</div>
+        <div id="demoMessage" style="margin-top:6px;font-size:14px">
+          Both sources match.
+        </div>
+      </div>
+
+      <button id="flipDemo" class="btn hot">
+        Change demo source
+      </button>
+    </div>
+
+    <div style="
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+      margin-top:12px
+    ">
+      <div class="statbox">
+        <small>SOURCE A</small>
+        <b id="demoA" style="font-size:16px">MATCH</b>
+      </div>
+
+      <div class="statbox">
+        <small>SOURCE B</small>
+        <b id="demoB" style="font-size:16px">MATCH</b>
+      </div>
+    </div>
+  `;
+
+  const use=$("#useDemo");
+  use.parentElement.parentElement.appendChild(box);
+
+  $("#flipDemo").onclick=flipDemoSource;
+}
+
+function updateDemoPanel(state){
+  ensureDemoPanel();
+
+  const panel=$("#demoPanel");
+  panel.style.display="block";
+
+  if(state==="changed"){
+    $("#demoA").textContent="MATCH";
+    $("#demoB").textContent="CHANGED";
+    $("#demoMessage").textContent="Source B changed. Recheck the Watch to verify the split.";
+    $("#flipDemo").disabled=true;
+    $("#flipDemo").textContent="Source changed";
+  }else{
+    $("#demoA").textContent="MATCH";
+    $("#demoB").textContent="MATCH";
+    $("#demoMessage").textContent="Both sources currently agree. Create the Watch first.";
+    $("#flipDemo").disabled=false;
+    $("#flipDemo").textContent="Change demo source";
+  }
+}
+
+async function flipDemoSource(){
+  if(!demoId){
+    toast("Start the safe demo first.",true);
+    return;
+  }
+
+  try{
+    $("#flipDemo").disabled=true;
+    $("#flipDemo").textContent="Changing…";
+
+    const r=await fetch(`/api/demo-flip?id=${encodeURIComponent(demoId)}`,{
+      method:"POST"
+    });
+
+    const j=await r.json();
+
+    if(!j.ok) throw new Error(j.error||"Could not change demo source.");
+
+    updateDemoPanel("changed");
+    toast("Source B changed. You can Recheck & Claim now.");
+  }catch(e){
+    $("#flipDemo").disabled=false;
+    $("#flipDemo").textContent="Change demo source";
+    toast(e.message||String(e),true);
+  }
+}
+
+ensureDemoPanel();
+
+$("#useDemo").onclick=async()=>{
+  try{
+    await startSafeDemo();
+  }catch(e){
+    toast(e.message||String(e),true);
+  }
+};
+
+
 timer=setInterval(()=>{if(current){$("#metricTime").textContent=timeLeft(current.deadline);renderActions()}},1000);
 preview();renderWatch(null);validateCreate();health();
 const deepWatch=new URL(location.href).searchParams.get("watch");
