@@ -83,6 +83,7 @@ nav{display:flex;align-items:center;justify-content:space-between;gap:16px}.bran
   <div class="row">
     <span id="healthChip" class="chip">● RPC checking</span>
     <span id="latestChip" class="chip">Latest watch —</span>
+    <span id="txState" class="chip">● Ready</span>
   </div>
   <div class="row">
     <button id="shareWatch" class="btn" disabled>Share watch</button>
@@ -100,12 +101,12 @@ nav{display:flex;align-items:center;justify-content:space-between;gap:16px}.bran
         </div>
         <div class="signal">
           <div class="source">
-            <div><small>SOURCE A</small><div id="leftValue" class="value">—</div></div>
+            <div><small>SOURCE A · <span id="leftSourceState">—</span></small><div id="leftValue" class="value">—</div></div>
             <div><a id="leftLink" target="_blank" rel="noopener"></a><div style="margin-top:10px"><button id="openLeft" class="btn">Open source A ↗</button></div></div>
           </div>
           <div id="compare" class="compare">=</div>
           <div class="source">
-            <div><small>SOURCE B</small><div id="rightValue" class="value">—</div></div>
+            <div><small>SOURCE B · <span id="rightSourceState">—</span></small><div id="rightValue" class="value">—</div></div>
             <div><a id="rightLink" target="_blank" rel="noopener"></a><div style="margin-top:10px"><button id="openRight" class="btn">Open source B ↗</button></div></div>
           </div>
         </div>
@@ -175,6 +176,7 @@ nav{display:flex;align-items:center;justify-content:space-between;gap:16px}.bran
         <div class="reward"><span id="rewardLabel">POTENTIAL REWARD</span><b id="rewardValue">—</b></div>
         <button id="recheck" class="btn hot block" disabled>Recheck & claim</button>
         <button id="refund" class="btn block" disabled>Refund expired watch</button>
+        <button id="reloadState" class="btn block" disabled>Reload on-chain state</button>
         <div class="field">
           <label>WATCH ID</label>
           <div class="row"><input id="watchId" placeholder="e.g. 3" inputmode="numeric"><button id="loadWatch" class="btn">Load</button></div>
@@ -229,32 +231,98 @@ import { studionet } from "https://esm.sh/genlayer-js@0.18.0/chains?bundle";
 
 const CONTRACT="0x68d058A66f486adeeF845785540f9056bc9E9E87";
 const ZERO="0x0000000000000000000000000000000000000000";
-let account=null,provider=null,current=null,busy=false,timer=null,boardRows=[],huntFilter='ending',lastStatus=null;
+let account=null,provider=null,current=null,busy=false,timer=null,boardRows=[],huntFilter='ending',lastStatus=null,lastTxHash=null;
 const $=(s)=>document.querySelector(s);
 const short=(a)=>a&&a!==ZERO?a.slice(0,6)+"…"+a.slice(-4):"—";
-const genNum=(v)=>Number(v||0)/1e18;
+const sleep=(ms)=>new Promise(r=>setTimeout(r,ms));
 const fmtGen=(n,d=4)=>Number(n).toLocaleString(undefined,{maximumFractionDigits:d})+" GEN";
-const rewardOf=(v)=>genNum(v)*.95;
-const feeOf=(v)=>genNum(v)*.05;
+
+function weiToGenString(v,d=6){
+  try{
+    const x=BigInt(String(v||0));
+    const base=10n**18n;
+    const whole=x/base;
+    const rem=x%base;
+    let frac=rem.toString().padStart(18,"0").slice(0,d).replace(/0+$/,"");
+    return whole.toLocaleString("en-US")+(frac?"."+frac:"");
+  }catch{return "0"}
+}
+const fmtWei=(v,d=6)=>weiToGenString(v,d)+" GEN";
+const rewardWei=(v)=>BigInt(String(v||0))*9500n/10000n;
+const feeWei=(v)=>BigInt(String(v||0))*500n/10000n;
 function readClient(){return createClient({chain:studionet,endpoint:"https://studio.genlayer.com/api",account:account||ZERO})}
 function toast(msg,error=false){const el=$("#toast");el.textContent=msg;el.className="toast show"+(error?" error":"");clearTimeout(el._t);el._t=setTimeout(()=>el.className="toast",4200)}
 function receipt(v){$("#receipt").textContent=typeof v==="string"?v:JSON.stringify(v,null,2)}
-function setBusy(v,label="Working…"){busy=v;["#openWatch","#recheck","#refund","#loadWatch","#reloadHunt"].forEach(s=>{const e=$(s);if(e)e.disabled=v||e.dataset.locked==="1"});if(v)toast(label)}
-async function write(functionName,args,value=0n){
+function setBusy(v,label="Working…"){
+  busy=v;
+  ["#openWatch","#recheck","#refund","#loadWatch","#reloadHunt","#reloadState"].forEach(sel=>{
+    const e=$(sel);if(e)e.disabled=v||e.dataset.locked==="1"
+  });
+  if(v)toast(label)
+}
+
+function setTxState(msg){
+  $("#txState").textContent=msg;
+}
+
+async function submitWrite(functionName,args,value=0n){
   if(!account)throw new Error("Connect a wallet first.");
   setBusy(true,"Check your wallet — "+functionName);
-  receipt("Sending "+functionName+"…");
-  try{
-    const c=createClient({chain:studionet,account,provider});
-    await c.connect("studionet");
-    const tx=await c.writeContract({address:CONTRACT,functionName,args,value});
-    receipt("Submitted "+functionName+"\n"+(typeof tx==="string"?tx:JSON.stringify(tx,null,2)));
-    toast("Transaction submitted. Waiting for accepted state…");
-    await new Promise(r=>setTimeout(r,2500));
-    await loadLatestOrCurrent();
-    await updateBalance();
-    return tx;
-  }finally{busy=false;renderActions()}
+  setTxState("● Waiting for wallet");
+  receipt("Waiting for wallet confirmation\n"+functionName);
+  const c=createClient({chain:studionet,account,provider});
+  await c.connect("studionet");
+  const tx=await c.writeContract({address:CONTRACT,functionName,args,value});
+  lastTxHash=typeof tx==="string"?tx:null;
+  receipt("Submitted "+functionName+"\n"+(typeof tx==="string"?tx:JSON.stringify(tx,null,2)));
+  setTxState("● Submitted");
+  toast("Transaction submitted. Waiting for accepted on-chain state…");
+  return tx;
+}
+
+function stateKey(r){
+  if(!r)return "";
+  return [r.status,r.note,r.left_value,r.right_value,r.finder,r.amount].join("|")
+}
+
+async function waitForNewWatch(beforeN,expected,timeout=90000){
+  const until=Date.now()+timeout;
+  while(Date.now()<until){
+    try{
+      const n=await nextWatch();
+      if(n>beforeN){
+        for(let id=n-1;id>=beforeN;id--){
+          const r=await watch(id);
+          if(
+            r?.id &&
+            r.funder?.toLowerCase()===account?.toLowerCase() &&
+            r.field===expected.field &&
+            r.left_url===expected.left &&
+            r.right_url===expected.right
+          ) return r;
+        }
+      }
+    }catch{}
+    await sleep(2000);
+  }
+  return null;
+}
+
+async function waitForWatchState(id,before,timeout=60000){
+  const beforeKey=stateKey(before);
+  const until=Date.now()+timeout;
+  let latest=before;
+  while(Date.now()<until){
+    try{
+      const r=await watch(id);
+      if(r?.id){
+        latest=r;
+        if(stateKey(r)!==beforeKey)return {rec:r,changed:true};
+      }
+    }catch{}
+    await sleep(2000);
+  }
+  return {rec:latest,changed:false};
 }
 async function watch(id){
   const raw=await readClient().readContract({address:CONTRACT,functionName:"get_watch",args:[String(id)],stateStatus:"accepted"});
@@ -269,11 +337,21 @@ function timeLeft(deadline){
   if(!s)return "Expired";const d=Math.floor(s/86400);s%=86400;const h=Math.floor(s/3600);s%=3600;const m=Math.floor(s/60);
   return d?`${d}d ${h}h`:h?`${h}h ${m}m`:`${m}m`
 }
+
+function sourceState(url){
+  try{
+    const host=new URL(url).hostname.toLowerCase();
+    if(host==="splitsignal-ten.vercel.app")return "HISTORICAL";
+    if(host==="splitsignalv2.vercel.app")return "LIVE DEMO";
+    return "PUBLIC";
+  }catch{return "INVALID"}
+}
+
 function renderWatch(rec){
   const previousStatus=current?.status||lastStatus;
   current=rec&&rec.id?rec:null;
   if(current?.status==="SPLIT" && previousStatus==="OPEN" && account && current.finder?.toLowerCase()===account.toLowerCase()){
-    $("#winText").textContent=`Watch #${current.id} split. ${fmtGen(rewardOf(current.amount),6)} finder reward triggered for ${short(current.finder)}.`;
+    $("#winText").textContent=`Watch #${current.id} split. ${fmtWei(rewardWei(current.amount),6)} finder reward triggered for ${short(current.finder)}.`;
     $("#celebrate").classList.add("show");
   }
   lastStatus=current?.status||lastStatus;
@@ -283,8 +361,10 @@ function renderWatch(rec){
   $("#leftValue").textContent=current?.left_value||"—";$("#rightValue").textContent=current?.right_value||"—";
   $("#compare").textContent=current?.left_value&&current.left_value!==current.right_value?"≠":"=";
   for(const [id,url] of [["#leftLink",current?.left_url],["#rightLink",current?.right_url]]){const e=$(id);e.textContent=url||"";e.href=url||"#"}
-  $("#metricBounty").textContent=current?fmtGen(genNum(current.amount),6):"—";
-  $("#metricFinder").textContent=current?fmtGen(rewardOf(current.amount),6):"—";
+  $("#leftSourceState").textContent=current?sourceState(current.left_url):"—";
+  $("#rightSourceState").textContent=current?sourceState(current.right_url):"—";
+  $("#metricBounty").textContent=current?fmtWei(current.amount,6):"—";
+  $("#metricFinder").textContent=current?fmtWei(rewardWei(current.amount),6):"—";
   $("#metricField").textContent=current?.field||"—";
   updateShare();$("#metricTime").textContent=current?timeLeft(current.deadline):"—";
   $("#watchId").value=current?.id||$("#watchId").value;
@@ -292,20 +372,60 @@ function renderWatch(rec){
   renderActions()
 }
 function renderActions(){
-  const open=$("#openWatch"),re=$("#recheck"),rf=$("#refund");
-  open.disabled=busy||!account;re.disabled=true;rf.disabled=true;
+  const open=$("#openWatch"),re=$("#recheck"),rf=$("#refund"),reload=$("#reloadState");
+  open.disabled=busy||!account;
+  re.disabled=true;
+  rf.disabled=true;
+  reload.disabled=busy||!current;
   open.textContent=account?"Create watch":"Connect wallet to create";
-  if(!account){$("#actionTitle").textContent="Connect your wallet";$("#actionText").textContent="Connect a Studio wallet to fund watches, hunt live signals and claim rewards.";$("#rewardValue").textContent="—";return}
-  if(!current){$("#actionTitle").textContent="Create or hunt";$("#actionText").textContent="Fund a new comparison or open Hunt signals to look for an active bounty.";$("#rewardValue").textContent="—";return}
+
+  if(!account){
+    $("#actionTitle").textContent="Connect your wallet";
+    $("#actionText").textContent="Connect a Studio wallet to fund watches, hunt live signals and claim rewards.";
+    $("#rewardValue").textContent="—";
+    return
+  }
+
+  if(!current){
+    $("#actionTitle").textContent="Create or hunt";
+    $("#actionText").textContent="Fund a new comparison or open Hunt signals to look for an active bounty.";
+    $("#rewardValue").textContent="—";
+    return
+  }
+
   const closed=Date.now()/1000>=Number(current.deadline);
-  $("#rewardValue").textContent=fmtGen(rewardOf(current.amount),6);
-  if(current.status==="OPEN"&&!closed){re.disabled=busy;$("#actionTitle").textContent="Hunt this signal";$("#actionText").textContent="Inspect both sources. If they have diverged, recheck before the deadline to claim 95%.";$("#rewardLabel").textContent="FINDER REWARD"}
-  else if(current.status==="OPEN"&&closed){rf.disabled=busy;$("#actionTitle").textContent="Window expired";$("#actionText").textContent="This watch stayed open through its deadline. Refund returns the bond to the funder.";$("#rewardLabel").textContent="LOCKED BOND";$("#rewardValue").textContent=fmtGen(genNum(current.amount),6)}
-  else if(current.status==="SPLIT"){$("#actionTitle").textContent="Signal found";$("#actionText").textContent=`${short(current.finder)} found the split and triggered payout.`;$("#rewardLabel").textContent="REWARD EARNED"}
-  else{$("#actionTitle").textContent="Bond refunded";$("#actionText").textContent="This watch has completed and the bond returned to its funder.";$("#rewardLabel").textContent="STATUS";$("#rewardValue").textContent="REFUNDED"}
+  const isFunder=current.funder?.toLowerCase()===account.toLowerCase();
+  $("#rewardValue").textContent=fmtWei(rewardWei(current.amount),6);
+
+  if(current.status==="OPEN"&&!closed){
+    re.disabled=busy;
+    $("#actionTitle").textContent="Hunt this signal";
+    $("#actionText").textContent="Inspect both sources. If they have diverged, recheck before the deadline to claim 95%.";
+    $("#rewardLabel").textContent="FINDER REWARD";
+  }
+  else if(current.status==="OPEN"&&closed){
+    rf.disabled=busy||!isFunder;
+    $("#actionTitle").textContent="Window expired";
+    $("#actionText").textContent=isFunder
+      ?"This watch stayed open through its deadline. Refund returns the full bond to your wallet."
+      :"This watch expired. Connect the funder wallet to trigger its refund.";
+    $("#rewardLabel").textContent="LOCKED BOND";
+    $("#rewardValue").textContent=fmtWei(current.amount,6);
+  }
+  else if(current.status==="SPLIT"){
+    $("#actionTitle").textContent="Signal found";
+    $("#actionText").textContent=`${short(current.finder)} found the split and triggered payout.`;
+    $("#rewardLabel").textContent="REWARD EARNED";
+  }
+  else{
+    $("#actionTitle").textContent="Bond refunded";
+    $("#actionText").textContent="This watch has completed and the bond returned to its funder.";
+    $("#rewardLabel").textContent="STATUS";
+    $("#rewardValue").textContent="REFUNDED";
+  }
 }
 async function loadId(id,quiet=false){if(!id)return;try{const r=await watch(id);if(r?.id){renderWatch(r);if(!quiet)receipt(r)}else if(!quiet)toast("No watch found at #"+id,true)}catch(e){if(!quiet){receipt(e.message||String(e));toast(e.message||String(e),true)}}}
-async function loadLatestOrCurrent(){const n=await nextWatch();const id=current?.id||Math.max(n-1,1);await loadId(id)}
+async function loadLatest(){const n=await nextWatch();const id=Math.max(n-1,1);await loadId(id)}
 function renderHunt(){
   const box=$("#huntList");
   let rows=[...boardRows];
@@ -319,7 +439,7 @@ function renderHunt(){
   rows.forEach(r=>{
     const live=r.status==="OPEN"&&now<Number(r.deadline);
     const el=document.createElement("div");el.className="watchrow";
-    el.innerHTML=`<b>#${r.id}</b><div class="pair"><b>${r.field} · ${r.status}</b><span>${r.left_url} ↔ ${r.right_url}</span></div><div class="bounty mono">${fmtGen(genNum(r.amount),4)}</div><div class="finder mono">${live?timeLeft(r.deadline):r.status}</div>`;
+    el.innerHTML=`<b>#${r.id}</b><div class="pair"><b>${r.field} · ${r.status}</b><span>${r.left_url} ↔ ${r.right_url}</span></div><div class="bounty mono">${fmtWei(r.amount,4)}</div><div class="finder mono">${live?timeLeft(r.deadline):r.status}</div>`;
     el.onclick=async()=>{await loadId(r.id);window.scrollTo({top:document.querySelector(".signal").getBoundingClientRect().top+scrollY-24,behavior:"smooth"})};
     box.appendChild(el)
   })
@@ -347,10 +467,122 @@ function preview(){
 $("#bond").addEventListener("input",preview);
 document.querySelectorAll(".preset").forEach(b=>b.onclick=()=>{document.querySelectorAll(".preset").forEach(x=>x.classList.remove("active"));b.classList.add("active");$("#hours").value=b.dataset.hours});
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===b));const v=b.dataset.view;$("#docsView").classList.toggle("active",v==="docs");$("#appView").style.display=v==="docs"?"none":"block";$("#createView").classList.toggle("active",v==="create");$("#huntView").classList.toggle("active",v==="hunt");if(v==="hunt")loadHunt()});
-$("#connect").onclick=async()=>{try{provider=window.ethereum;if(!provider)throw new Error("No browser wallet found.");account=(await provider.request({method:"eth_requestAccounts"}))[0];$("#connect").textContent=short(account);toast("Wallet connected: "+short(account));await updateBalance();await loadLatestOrCurrent()}catch(e){receipt(e.message||String(e));toast(e.message||String(e),true)}};
-$("#openWatch").onclick=async()=>{try{if(!validateCreate())throw new Error("Check the highlighted fields.");const b=Number($("#bond").value);if(!Number.isFinite(b)||b<.01)throw new Error("Minimum bounty is 0.01 GEN.");const value=BigInt(Math.round(b*1e6))*10n**12n;await write("open_watch",[$("#left").value.trim(),$("#right").value.trim(),$("#field").value.trim(),$("#hours").value.trim()],value)}catch(e){receipt(e.message||String(e));toast(e.message||String(e),true)}};
-$("#recheck").onclick=async()=>{try{if(!current)throw new Error("Load a watch first.");await write("recheck",[String(current.id)])}catch(e){receipt(e.message||String(e));toast(e.message||String(e),true)}};
-$("#refund").onclick=async()=>{try{if(!current)throw new Error("Load a watch first.");await write("refund",[String(current.id)])}catch(e){receipt(e.message||String(e));toast(e.message||String(e),true)}};
+$("#connect").onclick=async()=>{try{provider=window.ethereum;if(!provider)throw new Error("No browser wallet found.");account=(await provider.request({method:"eth_requestAccounts"}))[0];$("#connect").textContent=short(account);toast("Wallet connected: "+short(account));setTxState("● Ready");await updateBalance();await loadLatest()}catch(e){receipt(e.message||String(e));toast(e.message||String(e),true)}};
+$("#openWatch").onclick=async()=>{
+  try{
+    if(!validateCreate())throw new Error("Check the highlighted fields.");
+    const b=Number($("#bond").value);
+    if(!Number.isFinite(b)||b<.01)throw new Error("Minimum bounty is 0.01 GEN.");
+
+    const expected={
+      left:$("#left").value.trim(),
+      right:$("#right").value.trim(),
+      field:$("#field").value.trim().toLowerCase()
+    };
+
+    const beforeN=await nextWatch();
+    const value=BigInt(Math.round(b*1e6))*10n**12n;
+
+    await submitWrite(
+      "open_watch",
+      [expected.left,expected.right,expected.field,$("#hours").value.trim()],
+      value
+    );
+
+    setTxState("● Waiting for accepted state");
+
+    const rec=await waitForNewWatch(beforeN,expected);
+
+    if(!rec){
+      throw new Error("Transaction was submitted, but no new accepted Watch appeared within 90 seconds. Use Reload on-chain state or check Advanced receipt.");
+    }
+
+    renderWatch(rec);
+    receipt(rec);
+    await loadHunt();
+    await health();
+    await updateBalance();
+
+    setTxState("● Confirmed · Watch #"+rec.id);
+    toast("Watch #"+rec.id+" created and accepted.");
+  }catch(e){
+    receipt(e.message||String(e));
+    setTxState("● Needs attention");
+    toast(e.message||String(e),true);
+  }finally{
+    busy=false;
+    renderActions();
+    validateCreate();
+  }
+};
+
+$("#recheck").onclick=async()=>{
+  const before=current?{...current}:null;
+  try{
+    if(!before)throw new Error("Load a watch first.");
+
+    await submitWrite("recheck",[String(before.id)]);
+    setTxState("● Waiting for accepted state");
+
+    const result=await waitForWatchState(before.id,before);
+    if(result.rec?.id)renderWatch(result.rec);
+
+    await loadHunt();
+    await updateBalance();
+
+    if(result.changed){
+      setTxState("● Confirmed · Watch #"+before.id);
+      receipt(result.rec);
+      toast(result.rec.status==="SPLIT"
+        ?"SPLIT confirmed. Finder payout triggered."
+        :"Accepted state updated.");
+    }else{
+      setTxState("● Submitted · no state change yet");
+      receipt(result.rec||before);
+      toast("No accepted state change detected yet. Sources may still match, or the transaction may still be processing.");
+    }
+  }catch(e){
+    receipt(e.message||String(e));
+    setTxState("● Needs attention");
+    toast(e.message||String(e),true);
+  }finally{
+    busy=false;
+    renderActions();
+  }
+};
+
+$("#refund").onclick=async()=>{
+  const before=current?{...current}:null;
+  try{
+    if(!before)throw new Error("Load a watch first.");
+    if(before.funder?.toLowerCase()!==account?.toLowerCase())throw new Error("Connect the funder wallet to trigger this refund.");
+
+    await submitWrite("refund",[String(before.id)]);
+    setTxState("● Waiting for accepted state");
+
+    const result=await waitForWatchState(before.id,before);
+
+    if(result.rec?.id)renderWatch(result.rec);
+    await loadHunt();
+    await updateBalance();
+
+    if(result.rec?.status==="REFUNDED"){
+      setTxState("● Confirmed · Refunded");
+      receipt(result.rec);
+      toast("Refund confirmed on accepted state.");
+    }else{
+      setTxState("● Submitted · waiting");
+      toast("Refund submitted. Reload on-chain state if acceptance is still pending.");
+    }
+  }catch(e){
+    receipt(e.message||String(e));
+    setTxState("● Needs attention");
+    toast(e.message||String(e),true);
+  }finally{
+    busy=false;
+    renderActions();
+  }
+};
 $("#loadWatch").onclick=()=>loadId($("#watchId").value.trim());
 $("#reloadHunt").onclick=loadHunt;
 
@@ -359,8 +591,7 @@ async function updateBalance(){
   if(!provider||!account){$("#balanceChip").textContent="Balance —";return}
   try{
     const raw=await provider.request({method:"eth_getBalance",params:[account,"latest"]});
-    const n=Number(BigInt(raw))/1e18;
-    $("#balanceChip").textContent="Balance "+n.toLocaleString(undefined,{maximumFractionDigits:4})+" GEN";
+    $("#balanceChip").textContent="Balance "+weiToGenString(BigInt(raw),6)+" GEN";
   }catch{$("#balanceChip").textContent="Balance unavailable"}
 }
 function updateShare(){
@@ -375,7 +606,7 @@ async function shareCurrent(){
   if(!current)return;
   const url=$("#shareWatch").dataset.url;
   try{
-    if(navigator.share)await navigator.share({title:"SplitSignal Watch #"+current.id,text:`Watch #${current.id} · ${current.field} · ${fmtGen(genNum(current.amount),6)}`,url});
+    if(navigator.share)await navigator.share({title:"SplitSignal Watch #"+current.id,text:`Watch #${current.id} · ${current.field} · ${fmtWei(current.amount,6)}`,url});
     else{await navigator.clipboard.writeText(url);toast("Watch link copied.")}
   }catch(e){if(e?.name!=="AbortError")toast("Could not share watch.",true)}
 }
@@ -415,15 +646,39 @@ $("#useDemo").onclick=()=>{
   document.querySelectorAll(".preset").forEach(x=>x.classList.toggle("active",x.dataset.hours==="1"));
   preview();validateCreate();toast("Demo loaded. Check that both demo pages agree before creating.");
 };
-$("#openLeft").onclick=()=>{if(current?.left_url)window.open(current.left_url,"_blank","noopener")};
-$("#openRight").onclick=()=>{if(current?.right_url)window.open(current.right_url,"_blank","noopener")};
+function openSource(which){
+  if(!current)return;
+  const url=which==="left"?current.left_url:current.right_url;
+  if(!url)return;
+
+  if(sourceState(url)==="HISTORICAL"){
+    toast("This Watch points to the retired SplitSignal domain. Its on-chain history is preserved, but the old demo source is no longer served.",true);
+    return;
+  }
+
+  window.open(url,"_blank","noopener");
+}
+
+$("#openLeft").onclick=()=>openSource("left");
+$("#openRight").onclick=()=>openSource("right");
+
+$("#reloadState").onclick=async()=>{
+  if(!current)return;
+  setTxState("● Reloading accepted state");
+  await loadId(current.id);
+  await loadHunt();
+  await updateBalance();
+  await health();
+  setTxState("● Ready");
+  toast("Accepted on-chain state reloaded.");
+};
 $("#watchId").addEventListener("keydown",e=>{if(e.key==="Enter")$("#loadWatch").click()});
 if(window.ethereum?.on){
   window.ethereum.on("accountsChanged",async accounts=>{
     account=accounts?.[0]||null;
     $("#connect").textContent=account?short(account):"Connect wallet";
     renderActions();validateCreate();
-    if(account){await updateBalance();await loadLatestOrCurrent();}else updateBalance();
+    if(account){await updateBalance();await loadLatest();}else updateBalance();
   });
 }
 
@@ -433,7 +688,7 @@ $("#shareWin").onclick=async()=>{
   if(!current)return;
   const u=new URL(location.href);u.searchParams.set("watch",current.id);
   try{
-    if(navigator.share)await navigator.share({title:`SplitSignal #${current.id} — SPLIT`,text:`Signal found. ${fmtGen(rewardOf(current.amount),6)} finder reward triggered.`,url:u.toString()});
+    if(navigator.share)await navigator.share({title:`SplitSignal #${current.id} — SPLIT`,text:`Signal found. ${fmtWei(rewardWei(current.amount),6)} finder reward triggered.`,url:u.toString()});
     else{await navigator.clipboard.writeText(u.toString());toast("Result link copied.")}
   }catch(e){if(e?.name!=="AbortError")toast("Could not share.",true)}
 };
