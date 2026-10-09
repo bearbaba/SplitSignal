@@ -85,3 +85,38 @@ The live application explains the complete Watch lifecycle, including protocol l
 - Live app: https://splitsignalv2.vercel.app/
 
 The GenLayer Studio Explorer shows finalized and accepted deployment, `open_watch`, and `recheck` transactions.
+
+
+## Why GenLayer
+
+SplitSignal needs more than a traditional smart contract. The protocol must read public web sources, compare real-world information, reach validator consensus on the observation, and then enforce the result on-chain.
+
+GenLayer is central to that workflow.
+
+## 60-second demo
+
+1. Open the live app and connect a wallet.
+2. Click **Try demo**.
+3. Create the demo Watch while both sources match.
+4. Click **Change Source B**.
+5. Recheck the Watch.
+6. If GenLayer verifies the divergence, the Watch becomes `SPLIT` and the finder reward is triggered.
+
+Live app: https://splitsignalv2.vercel.app/
+
+Contract:
+`0x68d058A66f486adeeF845785540f9056bc9E9E87`
+
+Explorer:
+https://explorer-studio.genlayer.com/address/0x68d058A66f486adeeF845785540f9056bc9E9E87
+
+## Architecture
+
+User
+→ SplitSignal UI
+→ GenLayer Intelligent Contract
+→ Public Source A + Public Source B
+→ Validator consensus
+→ OPEN / SPLIT / REFUNDED
+→ Bounty settlement
+

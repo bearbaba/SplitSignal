@@ -29,6 +29,18 @@ nav{display:flex;align-items:center;justify-content:space-between;gap:16px}.bran
 .hunt{display:none}.hunt.active,.create.active{display:block}.create{display:none}.hunttools{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}
 .filter.active{background:var(--ink);color:#11100d}
 .statbar{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.demohero{border:1px solid rgba(255,92,0,.35);border-radius:22px;padding:18px;margin-top:14px;background:radial-gradient(circle at 10% 0,rgba(255,92,0,.10),transparent 40%),rgba(255,255,255,.015)}
+.demostep{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:.12em;color:var(--hot);text-transform:uppercase}
+.demotitle{font-size:24px;margin:6px 0}
+.demogrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.demostate{border:1px solid var(--line);border-radius:16px;padding:14px}
+.demostate small{display:block;font-family:"IBM Plex Mono";font-size:9px;color:var(--muted);margin-bottom:6px}
+.demostate b{font-size:18px}
+.health{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.health span{font-family:"IBM Plex Mono";font-size:10px;border:1px solid var(--line);border-radius:999px;padding:7px 10px}
+.health .ok{border-color:#315d3f;color:#9fd6aa}
+.health .bad{border-color:#6e2f2f;color:#ffaaa0}
+
 .statbox{border:1px solid var(--line);border-radius:15px;padding:12px}
 .statbox small{display:block;font-family:"IBM Plex Mono";font-size:9px;color:var(--muted);margin-bottom:5px}
 .statbox b{font-size:20px;font-weight:500}
@@ -120,14 +132,14 @@ nav{display:flex;align-items:center;justify-content:space-between;gap:16px}.bran
 
       <section id="createView" class="card form create active">
         <div class="cardhead"><div><div class="eyebrow">Fund a signal</div><h2>Create a watch</h2></div><span class="chip">HTTPS ONLY</span></div>
-        <p class="mono" style="color:var(--muted);font-size:11px;line-height:1.6;margin:-6px 0 16px">Choose two public pages that currently agree, then enter the word or token you want SplitSignal to watch.</p>
+        <p class="mono" style="color:var(--muted);font-size:11px;line-height:1.6;margin:-6px 0 16px">Watch two public sources. If they stop agreeing, the first verifier earns the bounty.</p>
         <div class="row" style="margin-bottom:12px">
           <button id="useDemo" class="btn">Try demo</button>
           <span class="mono" style="font-size:10px;color:var(--muted)">New here? Try the guided demo: create → change source → recheck.</span>
         </div>
         <div class="formgrid">
-          <div class="field span2"><label>SOURCE A</label><input id="left" value="" placeholder="https://site-a.com/page"></div>
-          <div class="field span2"><label>SOURCE B</label><input id="right" value="" placeholder="https://site-b.com/page"></div>
+          <div class="field span2"><label>SOURCE A</label><input id="left" value="" placeholder="Paste a public URL"></div>
+          <div class="field span2"><label>SOURCE B</label><input id="right" value="" placeholder="Paste another public URL"></div>
           <div class="field"><label>WHAT SHOULD WE WATCH?</label><input id="field" value="iana" maxlength="32" placeholder="e.g. approved"></div>
           <div class="field"><label>BOUNTY · GEN</label><input id="bond" value="0.01" inputmode="decimal"><div class="presets" style="margin-top:9px"><button class="btn bountyPreset" data-bond=".01">0.01</button><button class="btn bountyPreset" data-bond=".05">0.05</button><button class="btn bountyPreset" data-bond=".1">0.10</button><button class="btn bountyPreset" data-bond="1">1 GEN</button></div></div>
           <div class="field span2">
@@ -504,7 +516,13 @@ $("#openWatch").onclick=async()=>{
     await updateBalance();
 
     setTxState("● Confirmed · Watch #"+rec.id);
-    toast("Watch #"+rec.id+" created and accepted.");
+
+    if(demoId && rec.left_url.includes(demoId) && rec.right_url.includes(demoId)){
+      updateDemoPanel("created");
+      $("#demoPanel").scrollIntoView({behavior:"smooth",block:"center"});
+    }
+
+    toast("Watch #"+rec.id+" created.");
   }catch(e){
     receipt(e.message||String(e));
     setTxState("● Needs attention");
@@ -728,8 +746,10 @@ async function startSafeDemo(){
   preview();
   validateCreate();
   updateDemoPanel("ready");
+  await checkDemoHealth();
 
-  toast("Demo ready. Both sources match.");
+  $("#demoPanel").scrollIntoView({behavior:"smooth",block:"center"});
+  toast("Demo ready. Create the Watch to begin.");
 }
 
 function ensureDemoPanel(){
@@ -737,47 +757,34 @@ function ensureDemoPanel(){
 
   const box=document.createElement("div");
   box.id="demoPanel";
-  box.style.cssText=`
-    display:none;
-    margin-top:14px;
-    border:1px solid var(--line);
-    border-radius:18px;
-    padding:16px;
-    background:rgba(255,255,255,.02)
-  `;
+  box.className="demohero";
+  box.style.display="none";
 
   box.innerHTML=`
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-      <div>
-        <div class="eyebrow">SAFE DEMO</div>
-        <div id="demoMessage" style="margin-top:6px;font-size:14px">
-          Both sources match.
-        </div>
-        <div class="mono" style="margin-top:8px;font-size:10px;color:var(--muted)">
-          1. Create Watch&nbsp;&nbsp;→&nbsp;&nbsp;2. Change Source B&nbsp;&nbsp;→&nbsp;&nbsp;3. Recheck
-        </div>
-      </div>
-
-      <button id="flipDemo" class="btn hot">
-        Change demo source
-      </button>
+    <div class="demostep" id="demoStep">STEP 1 OF 3</div>
+    <div class="demotitle" id="demoTitle">Create a demo Watch</div>
+    <div id="demoMessage" style="color:var(--muted);font-size:13px">
+      Both demo sources currently match.
     </div>
 
-    <div style="
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:8px;
-      margin-top:12px
-    ">
-      <div class="statbox">
+    <div class="demogrid">
+      <div class="demostate">
         <small>SOURCE A</small>
-        <b id="demoA" style="font-size:16px">MATCH</b>
+        <b id="demoA">MATCH</b>
       </div>
-
-      <div class="statbox">
+      <div class="demostate">
         <small>SOURCE B</small>
-        <b id="demoB" style="font-size:16px">MATCH</b>
+        <b id="demoB">MATCH</b>
       </div>
+    </div>
+
+    <div class="health">
+      <span id="healthA">Source A: checking…</span>
+      <span id="healthB">Source B: checking…</span>
+    </div>
+
+    <div style="margin-top:14px">
+      <button id="flipDemo" class="btn hot" style="display:none">Change Source B</button>
     </div>
   `;
 
@@ -787,6 +794,35 @@ function ensureDemoPanel(){
   $("#flipDemo").onclick=flipDemoSource;
 }
 
+async function checkDemoHealth(){
+  if(!demoId)return;
+
+  const a=$("#left").value;
+  const b=$("#right").value;
+
+  async function check(url,el){
+    try{
+      const r=await fetch(url,{cache:"no-store"});
+      const t=await r.text();
+      const ok=r.ok && /iana|changed/i.test(t);
+      el.textContent=ok?"Reachable":"Unavailable";
+      el.className=ok?"ok":"bad";
+      return ok;
+    }catch{
+      el.textContent="Unavailable";
+      el.className="bad";
+      return false;
+    }
+  }
+
+  const [aok,bok]=await Promise.all([
+    check(a,$("#healthA")),
+    check(b,$("#healthB"))
+  ]);
+
+  return aok&&bok;
+}
+
 function updateDemoPanel(state){
   ensureDemoPanel();
 
@@ -794,17 +830,32 @@ function updateDemoPanel(state){
   panel.style.display="block";
 
   if(state==="changed"){
+    $("#demoStep").textContent="STEP 3 OF 3";
+    $("#demoTitle").textContent="Recheck and claim";
     $("#demoA").textContent="MATCH";
     $("#demoB").textContent="CHANGED";
-    $("#demoMessage").textContent="Source B changed. Recheck the Watch to claim the bounty.";
+    $("#demoMessage").textContent="Source B changed. Recheck the Watch to verify the split.";
     $("#flipDemo").disabled=true;
-    $("#flipDemo").textContent="Source changed";
-  }else{
+    $("#flipDemo").style.display="none";
+  }
+  else if(state==="created"){
+    $("#demoStep").textContent="STEP 2 OF 3";
+    $("#demoTitle").textContent="Change one source";
     $("#demoA").textContent="MATCH";
     $("#demoB").textContent="MATCH";
-    $("#demoMessage").textContent="Both sources match. Create the Watch, then change Source B.";
+    $("#demoMessage").textContent=`Watch #${current?.id||"—"} is open. Now change Source B.`;
     $("#flipDemo").disabled=false;
-    $("#flipDemo").textContent="Change demo source";
+    $("#flipDemo").style.display="inline-flex";
+    $("#flipDemo").textContent="Change Source B";
+  }
+  else{
+    $("#demoStep").textContent="STEP 1 OF 3";
+    $("#demoTitle").textContent="Create a demo Watch";
+    $("#demoA").textContent="MATCH";
+    $("#demoB").textContent="MATCH";
+    $("#demoMessage").textContent="Both demo sources currently match.";
+    $("#flipDemo").disabled=true;
+    $("#flipDemo").style.display="none";
   }
 }
 
@@ -827,6 +878,8 @@ async function flipDemoSource(){
     if(!j.ok) throw new Error(j.error||"Could not change demo source.");
 
     updateDemoPanel("changed");
+    await checkDemoHealth();
+    $("#demoPanel").scrollIntoView({behavior:"smooth",block:"center"});
     toast("Source B changed. Recheck now.");
   }catch(e){
     $("#flipDemo").disabled=false;
