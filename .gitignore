@@ -10,3 +10,10 @@ artifacts/
 node_modules/
 dist/
 build/
+
+# Local SplitSignal recovery snapshots
+public/index*.stable.html
+public/index*.backup.html
+public/index.before-*.html
+public/index.html.bak
+README.v*.md

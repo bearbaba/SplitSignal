@@ -143,7 +143,7 @@ nav{display:flex;align-items:center;justify-content:space-between;gap:16px}.bran
           <div class="field"><label>WHAT SHOULD WE WATCH?</label><input id="field" value="iana" maxlength="32" placeholder="e.g. approved"></div>
           <div class="field"><label>BOUNTY · GEN</label><input id="bond" value="0.01" inputmode="decimal"><div class="presets" style="margin-top:9px"><button class="btn bountyPreset" data-bond=".01">0.01</button><button class="btn bountyPreset" data-bond=".05">0.05</button><button class="btn bountyPreset" data-bond=".1">0.10</button><button class="btn bountyPreset" data-bond="1">1 GEN</button></div></div>
           <div class="field span2">
-            <label>WATCH WINDOW</label>
+            <label>ACTIVE FOR</label>
             <div class="presets">
               <button class="btn preset active" data-hours="1">1 hour</button>
               <button class="btn preset" data-hours="6">6 hours</button>
@@ -158,7 +158,7 @@ nav{display:flex;align-items:center;justify-content:space-between;gap:16px}.bran
           <div><small>FINDER GETS</small><b id="pvFinder">0.0095 GEN</b></div>
           <div><small>PROTOCOL</small><b id="pvFee">0.0005 GEN</b></div>
         </div>
-        <div id="formHint" class="mono" style="font-size:10px;color:var(--muted);margin:2px 0 12px">Minimum bounty: 0.01 GEN · Both pages must agree when the watch opens.</div>
+        <div id="formHint" class="mono" style="font-size:10px;color:var(--muted);margin:2px 0 12px">Minimum bounty: 0.01 GEN · Sources must agree when the Watch opens · Recheck anytime while active.</div>
         <button id="openWatch" class="btn hot block" disabled>Connect wallet to create</button>
       </section>
 
@@ -175,8 +175,14 @@ nav{display:flex;align-items:center;justify-content:space-between;gap:16px}.bran
           <button class="btn filter" data-filter="bounty">Highest bounty</button>
           <button class="btn filter" data-filter="mine">My watches</button>
           <button class="btn filter" data-filter="claims">My claims</button>
+          <button class="btn filter" data-filter="all">All Watches</button>
         </div>
-        <div id="huntList" class="huntgrid"><div class="mono">Refresh to load recent watches.</div></div>
+        <div id="huntList" class="huntgrid"><div class="mono">Refresh to load recent watches.</div>
+        <div id="watchPager" class="row" style="justify-content:space-between;margin-top:14px">
+          <button id="prevWatches" class="btn">← Newer</button>
+          <span id="watchPageInfo" class="mono" style="font-size:10px;color:var(--muted)">Page 1</span>
+          <button id="nextWatches" class="btn">Older →</button>
+        </div></div>
       </section>
     </div>
 
@@ -219,7 +225,7 @@ nav{display:flex;align-items:center;justify-content:space-between;gap:16px}.bran
     <section id="d2"><div class="eyebrow">02</div><h2>Hunt</h2><p>Anyone can inspect an open watch. The funder and finder do not need to be the same wallet. The bounty board surfaces recent on-chain watches without changing the contract.</p></section>
     <section id="d3"><div class="eyebrow">03</div><h2>Claim</h2><p>Before the deadline, Recheck asks the contract to read both sources again. If their token-presence results differ, the watch becomes SPLIT and the caller is recorded as finder. 95% of the bond is paid to the finder and 5% to the protocol fee recipient.</p></section>
     <section id="d4"><div class="eyebrow">04</div><h2>Refund</h2><p>If an OPEN watch reaches its deadline without a successful split, Refund returns the full bond to the original funder.</p></section>
-    <section id="d5"><div class="eyebrow">05</div><h2>Limits</h2><p>SplitSignal currently checks token presence in rendered HTML, not a structured numeric value. URLs must be HTTPS. Watch windows are 1–168 hours. The minimum bond is 0.01 GEN.</p></section>
+    <section id="d5"><div class="eyebrow">05</div><h2>Limits</h2><p>SplitSignal currently checks token presence in rendered HTML, not a structured numeric value. URLs must be HTTPS. A Watch can stay active for 1–168 hours. Recheck is allowed immediately and at any time before expiry. The minimum bond is 0.01 GEN.</p></section>
   </article>
 </div>
 </div>
@@ -438,39 +444,154 @@ function renderActions(){
 }
 async function loadId(id,quiet=false){if(!id)return;try{const r=await watch(id);if(r?.id){renderWatch(r);if(!quiet)receipt(r)}else if(!quiet)toast("No watch found at #"+id,true)}catch(e){if(!quiet){receipt(e.message||String(e));toast(e.message||String(e),true)}}}
 async function loadLatest(){const n=await nextWatch();const id=Math.max(n-1,1);await loadId(id)}
+
+let huntPage=0;
+const WATCH_PAGE_SIZE=10;
+let totalWatchCount=0;
+
 function renderHunt(){
   const box=$("#huntList");
   let rows=[...boardRows];
   const now=Date.now()/1000;
-  if(huntFilter==="ending") rows=rows.filter(x=>x.status==="OPEN"&&now<Number(x.deadline)).sort((a,b)=>Number(a.deadline)-Number(b.deadline));
-  if(huntFilter==="bounty") rows=rows.filter(x=>x.status==="OPEN"&&now<Number(x.deadline)).sort((a,b)=>Number(b.amount)-Number(a.amount));
-  if(huntFilter==="mine") rows=account?rows.filter(x=>x.funder?.toLowerCase()===account.toLowerCase()):[];
-  if(huntFilter==="claims") rows=account?rows.filter(x=>x.status==="SPLIT"&&x.finder?.toLowerCase()===account.toLowerCase()):[];
+
+  if(huntFilter==="ending"){
+    rows=rows
+      .filter(x=>x.status==="OPEN"&&now<Number(x.deadline))
+      .sort((a,b)=>Number(a.deadline)-Number(b.deadline));
+  }
+
+  if(huntFilter==="bounty"){
+    rows=rows
+      .filter(x=>x.status==="OPEN"&&now<Number(x.deadline))
+      .sort((a,b)=>BigInt(String(b.amount||0))>BigInt(String(a.amount||0))?1:-1);
+  }
+
+  if(huntFilter==="mine"){
+    rows=account
+      ? rows.filter(x=>x.funder?.toLowerCase()===account.toLowerCase())
+      : [];
+  }
+
+  if(huntFilter==="claims"){
+    rows=account
+      ? rows.filter(x=>x.status==="SPLIT"&&x.finder?.toLowerCase()===account.toLowerCase())
+      : [];
+  }
+
+  if(huntFilter==="all"){
+    rows.sort((a,b)=>Number(b.id)-Number(a.id));
+  }
+
   box.innerHTML="";
-  if(!rows.length){box.innerHTML='<div class="mono" style="color:var(--muted);padding:18px 0">Nothing here yet. Try another filter or create a new watch.</div>';return}
-  rows.forEach(r=>{
-    const live=r.status==="OPEN"&&now<Number(r.deadline);
-    const el=document.createElement("div");el.className="watchrow";
-    el.innerHTML=`<b>#${r.id}</b><div class="pair"><b>${r.field} · ${r.status}</b><span>${r.left_url} ↔ ${r.right_url}</span></div><div class="bounty mono">${fmtWei(r.amount,4)}</div><div class="finder mono">${live?timeLeft(r.deadline):r.status}</div>`;
-    el.onclick=async()=>{await loadId(r.id);window.scrollTo({top:document.querySelector(".signal").getBoundingClientRect().top+scrollY-24,behavior:"smooth"})};
-    box.appendChild(el)
-  })
+
+  if(!rows.length){
+    box.innerHTML=
+      '<div class="mono" style="color:var(--muted);padding:18px 0">'+
+      'Nothing on this page for this filter. Try another filter or browse older Watches.'+
+      '</div>';
+  } else {
+    rows.forEach(r=>{
+      const live=r.status==="OPEN"&&now<Number(r.deadline);
+
+      const el=document.createElement("div");
+      el.className="watchrow";
+
+      el.innerHTML=`
+        <b>#${r.id}</b>
+        <div class="pair">
+          <b>${r.field} · ${r.status}</b>
+          <span>${r.left_url} ↔ ${r.right_url}</span>
+        </div>
+        <div class="bounty mono">${typeof fmtWei==="function" ? fmtWei(r.amount,4) : fmtGen(genNum(r.amount),4)}</div>
+        <div class="finder mono">${live?timeLeft(r.deadline):r.status}</div>
+      `;
+
+      el.onclick=async()=>{
+        await loadId(r.id);
+        const signal=document.querySelector(".signal");
+        if(signal){
+          window.scrollTo({
+            top:signal.getBoundingClientRect().top+scrollY-24,
+            behavior:"smooth"
+          });
+        }
+      };
+
+      box.appendChild(el);
+    });
+  }
+
+  const totalPages=Math.max(1,Math.ceil(totalWatchCount/WATCH_PAGE_SIZE));
+
+  $("#watchPageInfo").textContent=
+    `Page ${huntPage+1} of ${totalPages} · ${totalWatchCount} Watches`;
+
+  $("#prevWatches").disabled=huntPage<=0;
+  $("#nextWatches").disabled=(huntPage+1)>=totalPages;
 }
-async function loadHunt(){
-  const box=$("#huntList");box.innerHTML='<div class="mono">Loading recent activity…</div>';
+
+async function loadHuntPage(page=0){
+  const box=$("#huntList");
+  box.innerHTML='<div class="mono">Loading Watches…</div>';
+
   try{
-    const n=await nextWatch(),ids=[];for(let i=n-1;i>=1&&ids.length<30;i--)ids.push(i);
-    boardRows=(await Promise.all(ids.map(i=>watch(i).catch(()=>null)))).filter(x=>x?.id);
+    const n=await nextWatch();
+    totalWatchCount=Math.max(0,n-1);
+
+    const totalPages=Math.max(1,Math.ceil(totalWatchCount/WATCH_PAGE_SIZE));
+    huntPage=Math.max(0,Math.min(page,totalPages-1));
+
+    const newest=totalWatchCount-(huntPage*WATCH_PAGE_SIZE);
+    const oldest=Math.max(1,newest-WATCH_PAGE_SIZE+1);
+
+    const ids=[];
+
+    for(let id=newest;id>=oldest;id--){
+      if(id>=1)ids.push(id);
+    }
+
+    boardRows=(
+      await Promise.all(
+        ids.map(id=>watch(id).catch(()=>null))
+      )
+    ).filter(x=>x?.id);
+
     const now=Date.now()/1000;
-    $("#statOpen").textContent=boardRows.filter(x=>x.status==="OPEN"&&now<Number(x.deadline)).length;
-    $("#statMine").textContent=account?boardRows.filter(x=>x.funder?.toLowerCase()===account.toLowerCase()).length:"—";
-    $("#statClaims").textContent=account?boardRows.filter(x=>x.status==="SPLIT"&&x.finder?.toLowerCase()===account.toLowerCase()).length:"—";
-    renderHunt()
-  }catch(e){box.innerHTML='<div class="mono">Could not load watches.</div>';toast(e.message||String(e),true)}
+
+    $("#statOpen").textContent=
+      boardRows.filter(x=>x.status==="OPEN"&&now<Number(x.deadline)).length;
+
+    $("#statMine").textContent=
+      account
+        ? boardRows.filter(x=>x.funder?.toLowerCase()===account.toLowerCase()).length
+        : "—";
+
+    $("#statClaims").textContent=
+      account
+        ? boardRows.filter(x=>x.status==="SPLIT"&&x.finder?.toLowerCase()===account.toLowerCase()).length
+        : "—";
+
+    renderHunt();
+
+  }catch(e){
+    box.innerHTML='<div class="mono">Could not load Watches.</div>';
+    toast(e.message||String(e),true);
+  }
 }
+
+async function loadHunt(){
+  await loadHuntPage(0);
+}
+
+$("#prevWatches").onclick=()=>loadHuntPage(huntPage-1);
+$("#nextWatches").onclick=()=>loadHuntPage(huntPage+1);
+
 document.querySelectorAll(".filter").forEach(b=>b.onclick=()=>{
-  document.querySelectorAll(".filter").forEach(x=>x.classList.toggle("active",x===b));
-  huntFilter=b.dataset.filter;renderHunt()
+  document.querySelectorAll(".filter")
+    .forEach(x=>x.classList.toggle("active",x===b));
+
+  huntFilter=b.dataset.filter;
+  renderHunt();
 });
 
 function preview(){
