@@ -74,8 +74,6 @@ https://splitsignalv2.vercel.app/
 
 Create → Hunt → Claim → Refund.
 
-![SplitSignal workflow](public/evidence/splitsignal-flow.png)
-
 The live application explains the complete Watch lifecycle, including protocol limits and bounty settlement.
 
 ### GenLayer Intelligent Contract
@@ -85,7 +83,6 @@ The live application explains the complete Watch lifecycle, including protocol l
 - Live app: https://splitsignalv2.vercel.app/
 
 The GenLayer Studio Explorer shows finalized and accepted deployment, `open_watch`, and `recheck` transactions.
-
 
 ## Why GenLayer
 
@@ -119,4 +116,3 @@ User
 → Validator consensus
 → OPEN / SPLIT / REFUNDED
 → Bounty settlement
-
