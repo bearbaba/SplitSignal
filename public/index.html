@@ -77,7 +77,7 @@ nav{display:flex;align-items:center;justify-content:space-between;gap:16px}.bran
   <div>
     <div class="eyebrow">Web change bounty protocol</div>
     <h1>Watch two sources.<br><em>Reward the difference.</em></h1>
-    <p>SplitSignal watches the same token across two web pages. Lock a bounty while they agree; if one changes before time runs out, the first person to verify it earns 95%.</p>
+    <p>Watch two public sources. If they stop agreeing, the first verifier earns the bounty.</p>
   </div>
   <div class="heroaside">
     <div class="eyebrow">Protocol rule</div>
@@ -95,7 +95,7 @@ nav{display:flex;align-items:center;justify-content:space-between;gap:16px}.bran
   <div class="row">
     <span id="healthChip" class="chip">● RPC checking</span>
     <span id="latestChip" class="chip">Latest watch —</span>
-    <span id="txState" class="chip">● Ready</span>
+    <span id="txState" class="chip">Ready</span>
   </div>
   <div class="row">
     <button id="shareWatch" class="btn" disabled>Share watch</button>
@@ -412,14 +412,14 @@ function renderActions(){
   if(current.status==="OPEN"&&!closed){
     re.disabled=busy;
     $("#actionTitle").textContent="Hunt this signal";
-    $("#actionText").textContent="Inspect both sources. If they have diverged, recheck before the deadline to claim 95%.";
+    $("#actionText").textContent="Check both sources. If they no longer match, recheck to claim the bounty.";
     $("#rewardLabel").textContent="FINDER REWARD";
   }
   else if(current.status==="OPEN"&&closed){
     rf.disabled=busy||!isFunder;
     $("#actionTitle").textContent="Window expired";
     $("#actionText").textContent=isFunder
-      ?"This watch stayed open through its deadline. Refund returns the full bond to your wallet."
+      ?"This Watch expired without a split. Your bounty can now be refunded."
       :"This watch expired. Connect the funder wallet to trigger its refund.";
     $("#rewardLabel").textContent="LOCKED BOND";
     $("#rewardValue").textContent=fmtWei(current.amount,6);
@@ -479,7 +479,7 @@ function preview(){
 $("#bond").addEventListener("input",preview);
 document.querySelectorAll(".preset").forEach(b=>b.onclick=()=>{document.querySelectorAll(".preset").forEach(x=>x.classList.remove("active"));b.classList.add("active");$("#hours").value=b.dataset.hours});
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===b));const v=b.dataset.view;$("#docsView").classList.toggle("active",v==="docs");$("#appView").style.display=v==="docs"?"none":"block";$("#createView").classList.toggle("active",v==="create");$("#huntView").classList.toggle("active",v==="hunt");if(v==="hunt")loadHunt()});
-$("#connect").onclick=async()=>{try{provider=window.ethereum;if(!provider)throw new Error("No browser wallet found.");account=(await provider.request({method:"eth_requestAccounts"}))[0];$("#connect").textContent=short(account);toast("Wallet connected: "+short(account));setTxState("● Ready");await updateBalance();await loadLatest()}catch(e){receipt(e.message||String(e));toast(e.message||String(e),true)}};
+$("#connect").onclick=async()=>{try{provider=window.ethereum;if(!provider)throw new Error("No browser wallet found.");account=(await provider.request({method:"eth_requestAccounts"}))[0];$("#connect").textContent=short(account);toast("Wallet connected: "+short(account));setTxState("Ready");await updateBalance();await loadLatest()}catch(e){receipt(e.message||String(e));toast(e.message||String(e),true)}};
 $("#openWatch").onclick=async()=>{
   try{
     if(!validateCreate())throw new Error("Check the highlighted fields.");
@@ -551,9 +551,18 @@ $("#recheck").onclick=async()=>{
     if(result.changed){
       setTxState("● Confirmed · Watch #"+before.id);
       receipt(result.rec);
-      toast(result.rec.status==="SPLIT"
-        ?"SPLIT confirmed. Finder payout triggered."
-        :"Watch updated.");
+
+      if(result.rec.status==="SPLIT"){
+        const signal=document.querySelector(".signal");
+        if(signal){
+          signal.style.display="";
+          delete signal.dataset.demoHidden;
+          signal.scrollIntoView({behavior:"smooth",block:"start"});
+        }
+        toast("Signal found. Finder reward triggered.");
+      }else{
+        toast("Watch updated.");
+      }
     }else{
       setTxState("● Submitted · no state change yet");
       receipt(result.rec||before);
@@ -631,8 +640,8 @@ async function shareCurrent(){
 async function health(){
   try{
     const n=await nextWatch();
-    $("#healthChip").textContent="● RPC online";
-    $("#latestChip").textContent="Latest watch #"+Math.max(n-1,0);
+    $("#healthChip").textContent="● Network ready";
+    $("#latestChip").textContent="Latest #"+Math.max(n-1,0);
   }catch{
     $("#healthChip").textContent="● RPC unavailable";
   }
@@ -687,7 +696,7 @@ $("#reloadState").onclick=async()=>{
   await loadHunt();
   await updateBalance();
   await health();
-  setTxState("● Ready");
+  setTxState("Ready");
   toast("Accepted on-chain state reloaded.");
 };
 $("#watchId").addEventListener("keydown",e=>{if(e.key==="Enter")$("#loadWatch").click()});
@@ -747,6 +756,12 @@ async function startSafeDemo(){
   validateCreate();
   updateDemoPanel("ready");
   await checkDemoHealth();
+
+  const signal=document.querySelector(".signal");
+  if(signal){
+    signal.dataset.demoHidden="1";
+    signal.style.display="none";
+  }
 
   $("#demoPanel").scrollIntoView({behavior:"smooth",block:"center"});
   toast("Demo ready. Create the Watch to begin.");
