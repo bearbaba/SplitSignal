@@ -1,21 +1,5 @@
 import { test, expect } from "@playwright/test";
 
-const maliciousWatch = (id) => ({
-  id: String(id),
-  funder: "0x1111111111111111111111111111111111111111",
-  finder: "0x0000000000000000000000000000000000000000",
-  left_url: "https://left.test/<svg/onload=window.__xss=1>",
-  right_url: "https://right.test/<img/src=x/onerror=window.__xss=1>",
-  field: "<img/src=x onerror=x=1>",
-  amount: "10000000000000000",
-  opened_at: 1700000000 + Number(id),
-  deadline: Math.floor(Date.now() / 1000) + 86400 + Number(id),
-  left_value: "<b>yes</b>",
-  right_value: "<i>yes</i>",
-  status: "OPEN",
-  note: "<svg/onload=window.__xss=2>"
-});
-
 test.beforeEach(async ({ page }) => {
   await page.route("https://esm.sh/**", async route => {
     const url = route.request().url();
@@ -84,11 +68,26 @@ test("bounty board keeps refresh/pagination controls and renders contract data a
   await expect(firstRow.locator("dl")).toContainText("right_value");
   await expect(firstRow.locator("dl")).toContainText("status");
   await expect(firstRow.locator("dl")).toContainText("note");
+  await expect(firstRow.locator("dl")).toContainText("0x1111111111111111111111111111111111111111");
+  await expect(firstRow.locator("dl")).toContainText("https://left.test/<svg/onload=window.__xss=1>");
+  await expect(firstRow.locator("dl")).toContainText("https://right.test/<img/src=x/onerror=window.__xss=1>");
+  await expect(firstRow.locator("dl")).toContainText("<b>yes</b>");
+  await expect(firstRow.locator("dl")).toContainText("<i>yes</i>");
+  await expect(firstRow.locator("dl")).toContainText("<svg/onload=window.__xss=2>");
 
   await expect(page.locator("#huntList img")).toHaveCount(0);
   await expect(page.locator("#huntList svg")).toHaveCount(0);
   expect(await page.evaluate(() => window.__xss)).toBe(0);
 
+  // Selecting the row renders the same contract fields in the current-Watch
+  // panel. The note and addresses must remain text there as well.
+  await firstRow.locator("b").first().click();
+  await expect(page.locator("#ownerMeta")).toContainText("<svg/onload=window.__xss=2>");
+  await expect(page.locator("#ownerMeta svg")).toHaveCount(0);
+  await expect(page.locator("#ownerMeta img")).toHaveCount(0);
+  expect(await page.evaluate(() => window.__xss)).toBe(0);
+
+  await page.getByRole("button", { name: "Find Bounties" }).click();
   await page.locator("#nextWatches").click();
   await expect(page.locator("#watchPageInfo")).toHaveText("Page 2 of 3 · 22 Watches");
   await expect(pager).toBeVisible();
