@@ -1,5 +1,5 @@
 # v0.3.0
-# { "Depends": "py-genlayer:9b8kjyda2ycxyq4ea6g4yfpnydxhd52gqba5rb8dw7krkh5mn9p0" }
+# { "Depends": "py-genlayer:latest" }
 
 import genlayer as gl
 from genlayer.types import *
