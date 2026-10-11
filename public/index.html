@@ -286,15 +286,27 @@ function setTxState(msg){
 }
 
 function transactionFailure(receiptData){
-  const leaders=receiptData?.consensus_data?.leader_receipt;
-  if(Array.isArray(leaders)){
-    for(const item of leaders){
-      if(item?.error)return String(item.error);
-      const result=String(item?.execution_result||"");
+  const receipts=receiptData?.consensus_data?.leader_receipt;
+
+  // Studio may include validator receipts in this array. Validators can report
+  // ERROR solely because their execution was cancelled after quorum; that is
+  // not a contract failure. The leader receipt is the execution outcome that
+  // produced the state validators agreed on.
+  if(Array.isArray(receipts)){
+    const leader=receipts.find(item=>String(item?.mode||"").toLowerCase()==="leader");
+    if(leader){
+      if(leader?.error)return String(leader.error);
+      const result=String(leader?.execution_result||"");
       if(result && !/SUCCESS|RETURN|AGREE/i.test(result)){
-        return "Execution result: "+result;
+        return "Leader execution result: "+result;
       }
+      if(result)return "";
     }
+  }
+
+  const executionName=String(receiptData?.txExecutionResultName||"");
+  if(executionName && /ERROR/i.test(executionName)){
+    return "Transaction execution result: "+executionName;
   }
 
   const resultName=String(receiptData?.resultName||"");
