@@ -11,6 +11,7 @@ Anyone can recheck the Watch while it is active. If GenLayer verifies that the t
 ## Live Project
 
 - App: https://splitsignalv2.vercel.app/
+- Current reviewer demo: https://youtu.be/ckpq1BAuDP0
 - GitHub: https://github.com/bearbaba/SplitSignal
 - Reviewer evidence: https://github.com/bearbaba/SplitSignal/blob/main/REVIEWER_EVIDENCE.md
 - Explorer: https://explorer-studio.genlayer.com/address/0x4611458C93a66fee5d4F2f050E80671c170d89C5
@@ -254,6 +255,7 @@ Those are scaling improvements. The core protocol flow is implemented and has co
 ## Project Links
 
 - Live app: https://splitsignalv2.vercel.app/
+- Current reviewer demo: https://youtu.be/ckpq1BAuDP0
 - GitHub: https://github.com/bearbaba/SplitSignal
 - Reviewer evidence: https://github.com/bearbaba/SplitSignal/blob/main/REVIEWER_EVIDENCE.md
 - Contract Explorer: https://explorer-studio.genlayer.com/address/0x4611458C93a66fee5d4F2f050E80671c170d89C5
