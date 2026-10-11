@@ -263,9 +263,11 @@ Those are scaling improvements. The core protocol flow is implemented; final liv
 
 The security-hardened SplitSignal contract is deployed on GenLayer Studionet. Repository security and browser regressions pass for the recipient-bound commit/reveal flow.
 
-Final live end-to-end verification against this deployment is the remaining release step:
+Live end-to-end verification completed successfully on the current deployment on October 11, 2026:
 
 `Create Watch → Sources Match → Change Source B → Commit claim → Reveal/recheck → SPLIT → Finder Reward`
+
+Watch #1 reached `SPLIT` on-chain and triggered the 0.0095 GEN finder reward for `0x4C7cb73aC8F8999af21cfc9fF4cF2333a9508Dcb`.
 
 ---
 
