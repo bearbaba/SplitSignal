@@ -42,17 +42,20 @@ jobs:
 
       - name: Diagnose failed Studionet commit transaction
         run: |
-          npm install --no-save genlayer-js@0.18.0
           node --input-type=module <<'NODE'
-          import { createClient } from "genlayer-js";
-          import { studionet } from "genlayer-js/chains";
-
+          const endpoint = "https://studio.genlayer.com/api";
           const hash = "0x9bf97a41710d72bfac6ebc5bfccd9b3d2f70f18a85cb82da00a1338689dd4615";
-          const client = createClient({
-            chain: studionet,
-            endpoint: "https://studio.genlayer.com/api"
-          });
 
-          const tx = await client.getTransaction({ hash });
-          console.log(JSON.stringify(tx, null, 2));
+          async function rpc(method, params) {
+            const response = await fetch(endpoint, {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params })
+            });
+            console.log("\n=== "+method+" HTTP "+response.status+" ===");
+            console.log(await response.text());
+          }
+
+          await rpc("eth_getTransactionByHash", [hash]);
+          await rpc("gen_dbg_traceTransaction", [{ txID: hash, round: 0 }]);
           NODE
