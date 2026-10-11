@@ -1,1 +1,1 @@
-genlayer-test==0.30.0rc2
+genlayer-test @ git+https://github.com/genlayerlabs/genlayer-testing-suite.git@f48c4d7121d9109c5709a065ef15a91e1fe379b6
