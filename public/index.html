@@ -736,11 +736,12 @@ $("#recheck").onclick=async()=>{
     const committed=await waitForSplitCommitment(before.id,account,digest);
     if(!committed)throw new Error("Split commitment was submitted but did not reach accepted state in time.");
 
-    const readyAt=(Number(committed.committed_at)||0)+30;
-    while(Math.floor(Date.now()/1000)<readyAt){
-      const left=Math.max(1,readyAt-Math.floor(Date.now()/1000));
+    // Wait from the moment the commitment is observed in accepted state.
+    // This is deliberately conservative and avoids relying on the user's local
+    // clock being perfectly aligned with the contract timestamp.
+    for(let left=31;left>0;left--){
       setTxState("● Claim secured · reveal in "+left+"s");
-      await sleep(Math.min(1000,left*1000));
+      await sleep(1000);
     }
 
     await submitWrite("recheck",[String(before.id),account,salt]);
