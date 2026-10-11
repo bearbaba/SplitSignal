@@ -5,6 +5,7 @@ This file maps the steward's requested fixes to the implementation, repository r
 ## Current release
 
 - Production app: https://splitsignalv2.vercel.app/
+- Current reviewer demo: https://youtu.be/ckpq1BAuDP0
 - Studionet contract: `0x4611458C93a66fee5d4F2f050E80671c170d89C5`
 - Studio import: https://studio.genlayer.com/?import-contract=0x4611458C93a66fee5d4F2f050E80671c170d89C5
 - Explorer: https://explorer-studio.genlayer.com/address/0x4611458C93a66fee5d4F2f050E80671c170d89C5
@@ -142,9 +143,13 @@ npx playwright install chromium
 npm run test:browser
 ```
 
-## Demo evidence note
+## Demo evidence
 
-The previous video demonstrated an earlier one-step recheck flow and predates the recipient-bound commit/reveal security change. It is intentionally not linked from the current README so reviewers are not shown stale behavior. The live app, current contract, repository tests, CI runs, and on-chain Watch #1 result above are the release evidence for this revision.
+Current reviewer demo: https://youtu.be/ckpq1BAuDP0
+
+The current video demonstrates the security-hardened flow on the active deployment: Watch creation while sources agree, Source B divergence, recipient-bound `commit_split`, the anti-front-run commitment delay, reveal/recheck, GenLayer consensus, and successful on-chain `SPLIT` settlement with the finder reward.
+
+The older one-step recheck video predates the recipient-bound commit/reveal change and is superseded by the current reviewer demo above.
 
 ## Trust boundary
 
