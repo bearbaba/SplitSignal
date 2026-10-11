@@ -11,8 +11,8 @@ Anyone can recheck the Watch while it is active. If GenLayer verifies that the t
 ## Live Project
 
 - App: https://splitsignalv2.vercel.app/
-- Demo video: https://youtu.be/Rzw-AcIbncc
 - GitHub: https://github.com/bearbaba/SplitSignal
+- Reviewer evidence: https://github.com/bearbaba/SplitSignal/blob/main/REVIEWER_EVIDENCE.md
 - Explorer: https://explorer-studio.genlayer.com/address/0x4611458C93a66fee5d4F2f050E80671c170d89C5
 - Studio: https://studio.genlayer.com/?import-contract=0x4611458C93a66fee5d4F2f050E80671c170d89C5
 
@@ -249,13 +249,13 @@ The current version demonstrates the full end-to-end protocol loop with a real I
 
 For larger-scale production use, future improvements could include dedicated indexing, source-quality reputation, analytics, alerts, and additional anti-spam systems.
 
-Those are scaling improvements. The core protocol flow is implemented; final live end-to-end verification against the current Studionet deployment is the remaining release step.
+Those are scaling improvements. The core protocol flow is implemented and has completed live end-to-end verification against the current Studionet deployment.
 
 ## Project Links
 
 - Live app: https://splitsignalv2.vercel.app/
-- Demo video: https://youtu.be/Rzw-AcIbncc
 - GitHub: https://github.com/bearbaba/SplitSignal
+- Reviewer evidence: https://github.com/bearbaba/SplitSignal/blob/main/REVIEWER_EVIDENCE.md
 - Contract Explorer: https://explorer-studio.genlayer.com/address/0x4611458C93a66fee5d4F2f050E80671c170d89C5
 - Studio import: https://studio.genlayer.com/?import-contract=0x4611458C93a66fee5d4F2f050E80671c170d89C5
 
