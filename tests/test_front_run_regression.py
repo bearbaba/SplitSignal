@@ -59,14 +59,10 @@ class Evm:
         return cls
 
 
-class StrictEq:
+class EqPrinciple:
     @staticmethod
     def strict_eq(fn):
         return fn()
-
-
-class EqPrinciple:
-    strict_eq = StrictEq.strict_eq
 
 
 class FakeWeb:
@@ -96,6 +92,14 @@ def load_contract_module():
     )
 
     gl = types.ModuleType("genlayer")
+    # Mirror the pinned runner's wildcard import surface used by SplitSignal.
+    gl.gl = gl
+    gl.Contract = Contract
+    gl.Address = Address
+    gl.u256 = u256
+    gl.u32 = u32
+    gl.TreeMap = TreeMap
+    gl.allow_storage = allow_storage
     gl.contract = types.SimpleNamespace(Contract=Contract)
     gl.public = Public()
     gl.evm = Evm()
