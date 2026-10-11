@@ -285,18 +285,71 @@ function setTxState(msg){
   $("#txState").textContent=msg;
 }
 
+function transactionFailure(receiptData){
+  const leaders=receiptData?.consensus_data?.leader_receipt;
+  if(Array.isArray(leaders)){
+    for(const item of leaders){
+      if(item?.error)return String(item.error);
+      const result=String(item?.execution_result||"");
+      if(result && !/SUCCESS|RETURN|AGREE/i.test(result)){
+        return "Execution result: "+result;
+      }
+    }
+  }
+
+  const resultName=String(receiptData?.resultName||"");
+  if(resultName && /FAIL|DISAGREE|TIMEOUT|VIOLATION|NO_MAJORITY/i.test(resultName)){
+    return "Transaction result: "+resultName;
+  }
+
+  return "";
+}
+
 async function submitWrite(functionName,args,value=0n){
   if(!account)throw new Error("Connect a wallet first.");
   setBusy(true,"Check your wallet — "+functionName);
   setTxState("● Waiting for wallet");
   receipt("Waiting for wallet confirmation\n"+functionName);
+
   const c=createClient({chain:studionet,account,provider});
   await c.connect("studionet");
+
   const tx=await c.writeContract({address:CONTRACT,functionName,args,value});
   lastTxHash=typeof tx==="string"?tx:null;
+
   receipt("Submitted "+functionName+"\n"+(typeof tx==="string"?tx:JSON.stringify(tx,null,2)));
-  setTxState("● Submitted");
-  toast("Transaction submitted. Confirming…");
+  setTxState("● Submitted · waiting for consensus");
+  toast("Transaction submitted. Waiting for GenLayer consensus…");
+
+  if(typeof tx!=="string")return tx;
+
+  let accepted;
+  try{
+    accepted=await c.waitForTransactionReceipt({
+      hash:tx,
+      interval:2000,
+      retries:90,
+      fullTransaction:true
+    });
+  }catch(e){
+    throw new Error(functionName+" did not reach Accepted state. Tx: "+tx+" · "+(e?.message||String(e)));
+  }
+
+  receipt({
+    function:functionName,
+    tx,
+    status:accepted?.statusName||accepted?.status,
+    result:accepted?.resultName||accepted?.result,
+    consensus:accepted?.consensus_data||null
+  });
+
+  const failure=transactionFailure(accepted);
+  if(failure){
+    throw new Error(functionName+" was not executed successfully. "+failure+" · Tx: "+tx);
+  }
+
+  setTxState("● Accepted · "+functionName);
+  toast(functionName+" accepted.");
   return tx;
 }
 
