@@ -68,7 +68,7 @@ nav{display:flex;align-items:center;justify-content:space-between;gap:16px}.bran
     <span class="chip"><strong>●</strong> STUDIONET</span>
     <span id="balanceChip" class="chip">Balance —</span>
     <a id="faucetBtn" class="chip" target="_blank" rel="noopener" href="https://studio.genlayer.com/">💧 Get test GEN</a>
-    <a class="chip contractchip" target="_blank" rel="noopener" href="https://studio.genlayer.com/?import-contract=0xFf31b09a9825f8674779a81EEE8509e8e0e39047">0xFf31…9047 ↗</a>
+    <a class="chip contractchip" target="_blank" rel="noopener" href="https://studio.genlayer.com/?import-contract=0x4611458C93a66fee5d4F2f050E80671c170d89C5">0x4611…89C5 ↗</a>
     <button id="connect" class="btn primary">Connect wallet</button>
   </div>
 </nav>
@@ -201,7 +201,7 @@ nav{display:flex;align-items:center;justify-content:space-between;gap:16px}.bran
         </div>
         <div id="ownerMeta" class="mono" style="font-size:10px;color:var(--muted);line-height:1.65"></div>
         <div class="mono" style="font-size:9px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px">
-          Studionet · Contract 0xFf31…9047<br>
+          Studionet · Contract 0x4611…89C5<br>
           Transactions may take a moment before the wallet prompt appears. Press an action only once.
         </div>
       </section>
@@ -247,7 +247,7 @@ nav{display:flex;align-items:center;justify-content:space-between;gap:16px}.bran
 import { createClient } from "https://esm.sh/genlayer-js@0.18.0?bundle";
 import { studionet } from "https://esm.sh/genlayer-js@0.18.0/chains?bundle";
 
-const CONTRACT="0xFf31b09a9825f8674779a81EEE8509e8e0e39047";
+const CONTRACT="0x4611458C93a66fee5d4F2f050E80671c170d89C5";
 const DEMO_SOURCE_ORIGIN="https://splitsignalv2.vercel.app";
 const ZERO="0x0000000000000000000000000000000000000000";
 let account=null,provider=null,current=null,busy=false,timer=null,boardRows=[],huntFilter='ending',lastStatus=null,lastTxHash=null;
