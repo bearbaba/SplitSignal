@@ -201,7 +201,7 @@ nav{display:flex;align-items:center;justify-content:space-between;gap:16px}.bran
         </div>
         <div id="ownerMeta" class="mono" style="font-size:10px;color:var(--muted);line-height:1.65"></div>
         <div class="mono" style="font-size:9px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px">
-          Studionet · Contract 0x68d0…9E87<br>
+          Studionet · Contract 0xFf31…9047<br>
           Transactions may take a moment before the wallet prompt appears. Press an action only once.
         </div>
       </section>
@@ -248,6 +248,7 @@ import { createClient } from "https://esm.sh/genlayer-js@0.18.0?bundle";
 import { studionet } from "https://esm.sh/genlayer-js@0.18.0/chains?bundle";
 
 const CONTRACT="0xFf31b09a9825f8674779a81EEE8509e8e0e39047";
+const DEMO_SOURCE_ORIGIN="https://splitsignalv2.vercel.app";
 const ZERO="0x0000000000000000000000000000000000000000";
 let account=null,provider=null,current=null,busy=false,timer=null,boardRows=[],huntFilter='ending',lastStatus=null,lastTxHash=null;
 const TEST_HOOK=globalThis.__SPLITSIGNAL_TEST_HOOK__||null;
@@ -936,9 +937,11 @@ function newDemoId(){
 async function startSafeDemo(){
   demoId=newDemoId();
 
-  const base=location.origin;
-  const left=`${base}/api/demo-source?id=${demoId}&side=left`;
-  const right=`${base}/api/demo-source?id=${demoId}&side=right`;
+  // Vercel preview deployments can be access-protected. GenLayer validators
+  // must read a genuinely public source, so demo evidence always lives on
+  // the production origin while the preview UI can still exercise new code.
+  const left=`${DEMO_SOURCE_ORIGIN}/api/demo-source?id=${demoId}&side=left`;
+  const right=`${DEMO_SOURCE_ORIGIN}/api/demo-source?id=${demoId}&side=right`;
 
   const r=await fetch(`/api/demo-reset?id=${encodeURIComponent(demoId)}`,{
     method:"POST"
@@ -1022,7 +1025,22 @@ async function checkDemoHealth(){
 
   async function check(url,el){
     try{
-      const r=await fetch(url,{cache:"no-store"});
+      const target=new URL(url);
+      const crossOrigin=target.origin!==location.origin;
+      const r=await fetch(url,{
+        cache:"no-store",
+        mode:crossOrigin?"no-cors":"cors"
+      });
+
+      // A no-cors response is intentionally opaque. Reaching this point means
+      // the browser could issue the request; GenLayer validators fetch the same
+      // public URL independently.
+      if(crossOrigin){
+        el.textContent="Public source";
+        el.className="ok";
+        return true;
+      }
+
       const t=await r.text();
       const ok=r.ok && /iana|changed/i.test(t);
       el.textContent=ok?"Reachable":"Unavailable";
