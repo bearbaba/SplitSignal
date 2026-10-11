@@ -3,10 +3,12 @@
 from genlayer import *
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from hashlib import sha256
 import json
 
 FEE_BPS = 500
 MIN_BOND = 10**16
+MIN_COMMIT_AGE = 30
 ZERO = Address("0x0000000000000000000000000000000000000000")
 
 @allow_storage
@@ -34,6 +36,8 @@ class Payee:
 
 class SplitSignal(gl.Contract):
     watches: TreeMap[str, Watch]
+    split_commitments: TreeMap[str, str]
+    split_commit_times: TreeMap[str, u32]
     next_id: u32
     fee_to: Address
 
@@ -93,6 +97,13 @@ class SplitSignal(gl.Contract):
         except Exception:
             return {}
 
+    def _commit_key(self, watch_id: str, reporter: Address) -> str:
+        return watch_id + "|" + str(reporter).lower()
+
+    def _claim_digest(self, watch_id: str, payout_recipient: Address, salt: str) -> str:
+        payload = watch_id + "|" + str(payout_recipient).lower() + "|" + salt
+        return sha256(payload.encode("utf-8")).hexdigest()
+
     @gl.public.write.payable
     def open_watch(self, left_url: str, right_url: str, field: str, hours: str) -> None:
         left = self._https(left_url)
@@ -113,6 +124,7 @@ class SplitSignal(gl.Contract):
             raise Exception("window must be 1-168 hours")
         if bond < MIN_BOND:
             raise Exception("bond below minimum")
+
         parsed = self._both(left, right, key)
         lv = parsed.get("left", {})
         rv = parsed.get("right", {})
@@ -120,23 +132,65 @@ class SplitSignal(gl.Contract):
             raise Exception("a page is unreadable")
         if str(lv.get("value")) != str(rv.get("value")):
             raise Exception("already split")
+
         cid = int(self.next_id)
         self.next_id = u32(cid + 1)
         now = self._now()
         self.watches[str(cid)] = Watch(
-            funder=gl.message.sender_address, finder=ZERO, left_url=left, right_url=right, field=key,
-            amount=u256(bond), opened_at=u32(now), deadline=u32(now + window * 3600),
-            left_value=str(lv.get("value")), right_value=str(rv.get("value")),
-            status="OPEN", note="sources matched at open",
+            funder=gl.message.sender_address,
+            finder=ZERO,
+            left_url=left,
+            right_url=right,
+            field=key,
+            amount=u256(bond),
+            opened_at=u32(now),
+            deadline=u32(now + window * 3600),
+            left_value=str(lv.get("value")),
+            right_value=str(rv.get("value")),
+            status="OPEN",
+            note="sources matched at open",
         )
 
     @gl.public.write
-    def recheck(self, watch_id: str) -> None:
+    def commit_split(self, watch_id: str, commitment: str) -> None:
         rec = self.watches[watch_id]
         if rec.status != "OPEN":
             raise Exception("not open")
         if self._now() >= int(rec.deadline):
             raise Exception("window closed")
+
+        digest = commitment.strip().lower()
+        if len(digest) != 64 or any(ch not in "0123456789abcdef" for ch in digest):
+            raise Exception("invalid split commitment")
+
+        key = self._commit_key(watch_id, gl.message.sender_address)
+        self.split_commitments[key] = digest
+        self.split_commit_times[key] = u32(self._now())
+
+    @gl.public.write
+    def recheck(self, watch_id: str, payout_recipient: Address, salt: str) -> None:
+        rec = self.watches[watch_id]
+        if rec.status != "OPEN":
+            raise Exception("not open")
+        if self._now() >= int(rec.deadline):
+            raise Exception("window closed")
+        if payout_recipient == ZERO:
+            raise Exception("invalid payout recipient")
+        if not salt:
+            raise Exception("salt required")
+
+        commit_key = self._commit_key(watch_id, gl.message.sender_address)
+        if commit_key not in self.split_commitments:
+            raise Exception("split commitment required")
+
+        expected = self._claim_digest(watch_id, payout_recipient, salt)
+        if self.split_commitments[commit_key] != expected:
+            raise Exception("split commitment mismatch")
+
+        committed_at = int(self.split_commit_times[commit_key])
+        if self._now() < committed_at + MIN_COMMIT_AGE:
+            raise Exception("split commitment too fresh")
+
         parsed = self._both(rec.left_url, rec.right_url, rec.field)
         left = parsed.get("left", {})
         right = parsed.get("right", {})
@@ -144,19 +198,26 @@ class SplitSignal(gl.Contract):
             rec.note = "a page is unreadable"
             self.watches[watch_id] = rec
             return
+
         rec.left_value = str(left.get("value"))
         rec.right_value = str(right.get("value"))
+
         if rec.left_value == rec.right_value:
             rec.note = "sources still match"
             self.watches[watch_id] = rec
             return
+
         gross = int(rec.amount)
         fee = gross * FEE_BPS // 10000
         rec.status = "SPLIT"
-        rec.finder = gl.message.sender_address
-        rec.note = "sources diverged"
+        rec.finder = payout_recipient
+        rec.note = "sources diverged; payout bound to committed recipient"
         self.watches[watch_id] = rec
-        self._pay(gl.message.sender_address, gross - fee)
+
+        self.split_commitments[commit_key] = ""
+        self.split_commit_times[commit_key] = u32(0)
+
+        self._pay(payout_recipient, gross - fee)
         self._pay(self.fee_to, fee)
 
     @gl.public.write
@@ -166,6 +227,7 @@ class SplitSignal(gl.Contract):
             raise Exception("not open")
         if self._now() < int(rec.deadline):
             raise Exception("wait for the window")
+
         amt = int(rec.amount)
         rec.status = "REFUNDED"
         rec.note = "funder exit"
@@ -176,13 +238,33 @@ class SplitSignal(gl.Contract):
     def get_watch(self, watch_id: str) -> str:
         if watch_id not in self.watches:
             return "{}"
+
         rec = self.watches[watch_id]
         return json.dumps({
-            "id": watch_id, "funder": str(rec.funder), "finder": str(rec.finder),
-            "left_url": rec.left_url, "right_url": rec.right_url, "field": rec.field,
-            "amount": str(int(rec.amount)), "opened_at": int(rec.opened_at),
-            "deadline": int(rec.deadline), "left_value": rec.left_value,
-            "right_value": rec.right_value, "status": rec.status, "note": rec.note,
+            "id": watch_id,
+            "funder": str(rec.funder),
+            "finder": str(rec.finder),
+            "left_url": rec.left_url,
+            "right_url": rec.right_url,
+            "field": rec.field,
+            "amount": str(int(rec.amount)),
+            "opened_at": int(rec.opened_at),
+            "deadline": int(rec.deadline),
+            "left_value": rec.left_value,
+            "right_value": rec.right_value,
+            "status": rec.status,
+            "note": rec.note,
+        })
+
+    @gl.public.view
+    def get_split_commitment(self, watch_id: str, reporter: Address) -> str:
+        key = self._commit_key(watch_id, reporter)
+        if key not in self.split_commitments:
+            return "{}"
+
+        return json.dumps({
+            "commitment": self.split_commitments[key],
+            "committed_at": int(self.split_commit_times[key]),
         })
 
     @gl.public.view
