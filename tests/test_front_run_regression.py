@@ -195,12 +195,15 @@ def test_copied_or_front_run_reveal_cannot_redirect_discoverer_reward():
 
     now[0] += module.MIN_COMMIT_AGE + 1
 
+    # Mirror the pinned Studionet runner: public Address calldata is decoded
+    # as a plain string at the Python boundary.
     with pytest.raises(Exception, match="split commitment mismatch"):
-        contract.recheck("1", Address(BOB), salt)
+        contract.recheck("1", BOB, salt)
 
     # If Bob front-runs the copied reveal byte-for-byte, the committed
-    # recipient is still Alice, so the reward cannot be stolen.
-    contract.recheck("1", Address(ALICE), salt)
+    # recipient is still Alice, so the reward cannot be stolen. The contract
+    # must normalize the string recipient before writing Address storage.
+    contract.recheck("1", ALICE, salt)
 
     watch = contract.watches["1"]
     assert watch.status == "SPLIT"
