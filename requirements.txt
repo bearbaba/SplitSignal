@@ -1,1 +1,1 @@
-genlayer-test
+genlayer-test==0.30.0rc2
