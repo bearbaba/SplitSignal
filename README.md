@@ -13,12 +13,12 @@ Anyone can recheck the Watch while it is active. If GenLayer verifies that the t
 - App: https://splitsignalv2.vercel.app/
 - Demo video: https://youtu.be/Rzw-AcIbncc
 - GitHub: https://github.com/bearbaba/SplitSignal
-- Explorer: https://explorer-studio.genlayer.com/address/0xFf31b09a9825f8674779a81EEE8509e8e0e39047
-- Studio: https://studio.genlayer.com/?import-contract=0xFf31b09a9825f8674779a81EEE8509e8e0e39047
+- Explorer: https://explorer-studio.genlayer.com/address/0x4611458C93a66fee5d4F2f050E80671c170d89C5
+- Studio: https://studio.genlayer.com/?import-contract=0x4611458C93a66fee5d4F2f050E80671c170d89C5
 
 ## Intelligent Contract
 
-`0xFf31b09a9825f8674779a81EEE8509e8e0e39047`
+`0x4611458C93a66fee5d4F2f050E80671c170d89C5`
 
 Deployed on GenLayer Studionet.
 
@@ -249,15 +249,15 @@ The current version demonstrates the full end-to-end protocol loop with a real I
 
 For larger-scale production use, future improvements could include dedicated indexing, source-quality reputation, analytics, alerts, and additional anti-spam systems.
 
-Those are scaling improvements. The core protocol flow already works end to end.
+Those are scaling improvements. The core protocol flow is implemented; final live end-to-end verification against the current Studionet deployment is the remaining release step.
 
 ## Project Links
 
 - Live app: https://splitsignalv2.vercel.app/
 - Demo video: https://youtu.be/Rzw-AcIbncc
 - GitHub: https://github.com/bearbaba/SplitSignal
-- Contract Explorer: https://explorer-studio.genlayer.com/address/0xFf31b09a9825f8674779a81EEE8509e8e0e39047
-- Studio import: https://studio.genlayer.com/?import-contract=0xFf31b09a9825f8674779a81EEE8509e8e0e39047
+- Contract Explorer: https://explorer-studio.genlayer.com/address/0x4611458C93a66fee5d4F2f050E80671c170d89C5
+- Studio import: https://studio.genlayer.com/?import-contract=0x4611458C93a66fee5d4F2f050E80671c170d89C5
 
 ## Status
 
