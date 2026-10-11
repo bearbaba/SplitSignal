@@ -1,8 +1,6 @@
-# v0.3.0
-# { "Depends": "py-genlayer:latest" }
+# { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }
 
-import genlayer as gl
-from genlayer.types import *
+from genlayer import *
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from hashlib import sha256
@@ -36,7 +34,7 @@ class Payee:
     class Write:
         pass
 
-class SplitSignal(gl.contract.Contract):
+class SplitSignal(gl.Contract):
     watches: TreeMap[str, Watch]
     split_commitments: TreeMap[str, str]
     split_commit_times: TreeMap[str, u32]
