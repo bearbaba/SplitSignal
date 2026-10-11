@@ -108,6 +108,23 @@ Observed result:
 
 This live run also exercised the runtime Address-normalization fix on the deployed Studionet contract.
 
+### Independent on-chain check
+
+A reviewer can independently import the current contract in Studio and call:
+
+`get_watch("1")`
+
+Expected accepted state:
+
+- `status = "SPLIT"`
+- `finder = "0x4C7cb73aC8F8999af21cfc9fF4cF2333a9508Dcb"`
+- `left_value = "yes"`
+- `right_value = "no"`
+- `note = "sources diverged; payout bound to committed recipient"`
+- `amount = "10000000000000000"` (0.01 GEN original bounty)
+
+The UI reports the corresponding finder reward as `0.0095 GEN`, matching the contract's 95% finder / 5% protocol split.
+
 ## Reproduce repository checks
 
 Security regression:
