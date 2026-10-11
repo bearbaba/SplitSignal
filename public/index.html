@@ -44,7 +44,7 @@ nav{display:flex;align-items:center;justify-content:space-between;gap:16px}.bran
 .statbox{border:1px solid var(--line);border-radius:15px;padding:12px}
 .statbox small{display:block;font-family:"IBM Plex Mono";font-size:9px;color:var(--muted);margin-bottom:5px}
 .statbox b{font-size:20px;font-weight:500}
-.huntgrid{display:grid;gap:8px}.watchrow{display:grid;grid-template-columns:70px 1fr 120px 110px;gap:12px;align-items:center;border:1px solid var(--line);border-radius:16px;padding:14px;cursor:pointer}.watchrow:hover{border-color:var(--line2)}.watchrow .pair{min-width:0}.watchrow .pair b,.watchrow .pair span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.watchrow .pair span{font-family:"IBM Plex Mono";font-size:10px;color:var(--muted);margin-top:3px}
+.huntgrid{display:grid;gap:8px}.watchrow{display:grid;grid-template-columns:70px 1fr 120px 110px;gap:12px;align-items:start;border:1px solid var(--line);border-radius:16px;padding:14px;cursor:pointer}.watchrow:hover{border-color:var(--line2)}.watchrow .pair{min-width:0}.watchrow .pair b,.watchrow .pair span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.watchrow .pair span{font-family:"IBM Plex Mono";font-size:10px;color:var(--muted);margin-top:3px}.watchdetails{grid-column:2/-1;margin-top:4px;border-top:1px solid var(--line);padding-top:9px;font-family:"IBM Plex Mono";font-size:10px;color:var(--muted);line-height:1.55}.watchdetails summary{cursor:pointer}.watchdetails dl{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:4px 10px;margin:8px 0 0}.watchdetails dt{color:#77756f}.watchdetails dd{margin:0;min-width:0;overflow-wrap:anywhere}.watchdetails a{text-decoration:underline;text-underline-offset:2px}
 .advanced{margin-top:14px}.advanced summary{cursor:pointer;color:var(--muted);font-family:"IBM Plex Mono";font-size:11px}.receipt{white-space:pre-wrap;word-break:break-word;font-size:11px;color:#c9c1b4;line-height:1.55;margin-top:12px;max-height:300px;overflow:auto}
 .field.invalid{border-color:#ff8b73}.field.valid{border-color:rgba(183,245,176,.35)}
 .successGlow{box-shadow:inset 0 0 0 1px rgba(240,90,0,.55),0 0 60px rgba(240,90,0,.08)}
@@ -177,12 +177,12 @@ nav{display:flex;align-items:center;justify-content:space-between;gap:16px}.bran
           <button class="btn filter" data-filter="claims">My claims</button>
           <button class="btn filter" data-filter="all">All Watches</button>
         </div>
-        <div id="huntList" class="huntgrid"><div class="mono">Refresh to load recent watches.</div>
+        <div id="huntList" class="huntgrid"><div class="mono">Refresh to load recent watches.</div></div>
         <div id="watchPager" class="row" style="justify-content:space-between;margin-top:14px">
           <button id="prevWatches" class="btn">← Newer</button>
           <span id="watchPageInfo" class="mono" style="font-size:10px;color:var(--muted)">Page 1</span>
           <button id="nextWatches" class="btn">Older →</button>
-        </div></div>
+        </div>
       </section>
     </div>
 
@@ -223,7 +223,7 @@ nav{display:flex;align-items:center;justify-content:space-between;gap:16px}.bran
   <article>
     <section id="d1"><div class="eyebrow">01</div><h2>Create</h2><p>Choose two HTTPS pages and a token to watch. A watch opens only if both pages currently agree on whether that token is present. Your GEN bond remains locked until a split is found or the deadline expires.</p></section>
     <section id="d2"><div class="eyebrow">02</div><h2>Hunt</h2><p>Anyone can inspect an open watch. The funder and finder do not need to be the same wallet. The bounty board surfaces recent on-chain watches without changing the contract.</p></section>
-    <section id="d3"><div class="eyebrow">03</div><h2>Claim</h2><p>Before the deadline, Recheck asks the contract to read both sources again. If their token-presence results differ, the watch becomes SPLIT and the caller is recorded as finder. 95% of the bond is paid to the finder and 5% to the protocol fee recipient.</p></section>
+    <section id="d3"><div class="eyebrow">03</div><h2>Claim</h2><p>Before the deadline, Recheck first commits a finder-specific claim, then reveals it after a short anti-front-run delay. If the sources differ, the watch becomes SPLIT. The committed payout recipient receives 95% of the bond and 5% goes to the protocol fee recipient. Copying the reveal cannot redirect the reward.</p></section>
     <section id="d4"><div class="eyebrow">04</div><h2>Refund</h2><p>If an OPEN watch reaches its deadline without a successful split, Refund returns the full bond to the original funder.</p></section>
     <section id="d5"><div class="eyebrow">05</div><h2>Limits</h2><p>SplitSignal currently checks token presence in rendered HTML, not a structured numeric value. URLs must be HTTPS. A Watch can stay active for 1–168 hours. Recheck is allowed immediately and at any time before expiry. The minimum bond is 0.01 GEN.</p></section>
   </article>
@@ -250,6 +250,7 @@ import { studionet } from "https://esm.sh/genlayer-js@0.18.0/chains?bundle";
 const CONTRACT="0x68d058A66f486adeeF845785540f9056bc9E9E87";
 const ZERO="0x0000000000000000000000000000000000000000";
 let account=null,provider=null,current=null,busy=false,timer=null,boardRows=[],huntFilter='ending',lastStatus=null,lastTxHash=null;
+const TEST_HOOK=globalThis.__SPLITSIGNAL_TEST_HOOK__||null;
 const $=(s)=>document.querySelector(s);
 const short=(a)=>a&&a!==ZERO?a.slice(0,6)+"…"+a.slice(-4):"—";
 const sleep=(ms)=>new Promise(r=>setTimeout(r,ms));
@@ -343,12 +344,36 @@ async function waitForWatchState(id,before,timeout=60000){
   return {rec:latest,changed:false};
 }
 async function watch(id){
+  if(TEST_HOOK?.watch)return await TEST_HOOK.watch(String(id));
   const raw=await readClient().readContract({address:CONTRACT,functionName:"get_watch",args:[String(id)],stateStatus:"accepted"});
   return typeof raw==="string"?JSON.parse(raw):raw
 }
 async function nextWatch(){
+  if(TEST_HOOK?.nextWatch)return Number(await TEST_HOOK.nextWatch());
   const raw=await readClient().readContract({address:CONTRACT,functionName:"next_watch",args:[],stateStatus:"accepted"});
   return Number(String(raw).replace(/"/g,""))
+}
+async function splitCommitment(id,reporter){
+  if(TEST_HOOK?.splitCommitment)return await TEST_HOOK.splitCommitment(String(id),reporter);
+  const raw=await readClient().readContract({address:CONTRACT,functionName:"get_split_commitment",args:[String(id),reporter],stateStatus:"accepted"});
+  return typeof raw==="string"?JSON.parse(raw):raw
+}
+async function waitForSplitCommitment(id,reporter,digest,timeout=90000){
+  const until=Date.now()+timeout;
+  while(Date.now()<until){
+    try{
+      const rec=await splitCommitment(id,reporter);
+      if(rec?.commitment===digest)return rec;
+    }catch{}
+    await sleep(1500);
+  }
+  return null;
+}
+async function claimDigest(watchId,recipient,salt){
+  const payload=String(watchId)+"|"+recipient.toLowerCase()+"|"+salt;
+  const bytes=new TextEncoder().encode(payload);
+  const hash=await crypto.subtle.digest("SHA-256",bytes);
+  return [...new Uint8Array(hash)].map(x=>x.toString(16).padStart(2,"0")).join("");
 }
 function timeLeft(deadline){
   if(!deadline)return "—";let s=Math.max(0,Number(deadline)-Math.floor(Date.now()/1000));
@@ -386,7 +411,8 @@ function renderWatch(rec){
   $("#metricField").textContent=current?.field||"—";
   updateShare();$("#metricTime").textContent=current?timeLeft(current.deadline):"—";
   $("#watchId").value=current?.id||$("#watchId").value;
-  $("#ownerMeta").innerHTML=current?`Funder&nbsp; ${short(current.funder)}<br>Finder&nbsp; ${short(current.finder)}<br>Note&nbsp;&nbsp;&nbsp; ${current.note||"—"}`:"";
+  $("#ownerMeta").textContent=current?`Funder  ${current.funder||"—"}\nFinder  ${current.finder||"—"}\nNote    ${current.note||"—"}`:"";
+  $("#ownerMeta").style.whiteSpace="pre-wrap";
   renderActions()
 }
 function renderActions(){
@@ -449,90 +475,128 @@ let huntPage=0;
 const WATCH_PAGE_SIZE=10;
 let totalWatchCount=0;
 
+function safeCell(tag,value,className=""){
+  const el=document.createElement(tag);
+  if(className)el.className=className;
+  el.textContent=value==null?"":String(value);
+  return el;
+}
+function safeUrl(value){
+  try{
+    const u=new URL(String(value||""));
+    return u.protocol==="https:"?u.toString():"";
+  }catch{return ""}
+}
+function addDetail(dl,label,value,url=false){
+  const dt=safeCell("dt",label);
+  const dd=document.createElement("dd");
+  if(url){
+    const href=safeUrl(value);
+    if(href){
+      const a=document.createElement("a");
+      a.href=href;
+      a.target="_blank";
+      a.rel="noopener";
+      a.textContent=String(value||"");
+      a.addEventListener("click",e=>e.stopPropagation());
+      dd.appendChild(a);
+    }else{
+      dd.textContent=String(value||"");
+    }
+  }else{
+    dd.textContent=value==null?"":String(value);
+  }
+  dl.append(dt,dd);
+}
 function renderHunt(){
   const box=$("#huntList");
   let rows=[...boardRows];
   const now=Date.now()/1000;
 
   if(huntFilter==="ending"){
-    rows=rows
-      .filter(x=>x.status==="OPEN"&&now<Number(x.deadline))
-      .sort((a,b)=>Number(a.deadline)-Number(b.deadline));
+    rows=rows.filter(x=>x.status==="OPEN"&&now<Number(x.deadline)).sort((a,b)=>Number(a.deadline)-Number(b.deadline));
   }
-
   if(huntFilter==="bounty"){
-    rows=rows
-      .filter(x=>x.status==="OPEN"&&now<Number(x.deadline))
-      .sort((a,b)=>BigInt(String(b.amount||0))>BigInt(String(a.amount||0))?1:-1);
+    rows=rows.filter(x=>x.status==="OPEN"&&now<Number(x.deadline)).sort((a,b)=>BigInt(String(b.amount||0))>BigInt(String(a.amount||0))?1:-1);
   }
-
   if(huntFilter==="mine"){
-    rows=account
-      ? rows.filter(x=>x.funder?.toLowerCase()===account.toLowerCase())
-      : [];
+    rows=account?rows.filter(x=>x.funder?.toLowerCase()===account.toLowerCase()):[];
   }
-
   if(huntFilter==="claims"){
-    rows=account
-      ? rows.filter(x=>x.status==="SPLIT"&&x.finder?.toLowerCase()===account.toLowerCase())
-      : [];
+    rows=account?rows.filter(x=>x.status==="SPLIT"&&x.finder?.toLowerCase()===account.toLowerCase()):[];
   }
-
   if(huntFilter==="all"){
     rows.sort((a,b)=>Number(b.id)-Number(a.id));
   }
 
-  box.innerHTML="";
+  box.replaceChildren();
 
   if(!rows.length){
-    box.innerHTML=
-      '<div class="mono" style="color:var(--muted);padding:18px 0">'+
-      'Nothing on this page for this filter. Try another filter or browse older Watches.'+
-      '</div>';
-  } else {
+    const empty=safeCell("div","Nothing on this page for this filter. Try another filter or browse older Watches.","mono");
+    empty.style.cssText="color:var(--muted);padding:18px 0";
+    box.appendChild(empty);
+  }else{
     rows.forEach(r=>{
       const live=r.status==="OPEN"&&now<Number(r.deadline);
-
       const el=document.createElement("div");
       el.className="watchrow";
 
-      el.innerHTML=`
-        <b>#${r.id}</b>
-        <div class="pair">
-          <b>${r.field} · ${r.status}</b>
-          <span>${r.left_url} ↔ ${r.right_url}</span>
-        </div>
-        <div class="bounty mono">${typeof fmtWei==="function" ? fmtWei(r.amount,4) : fmtGen(genNum(r.amount),4)}</div>
-        <div class="finder mono">${live?timeLeft(r.deadline):r.status}</div>
-      `;
+      el.appendChild(safeCell("b","#"+String(r.id??"")));
+
+      const pair=document.createElement("div");
+      pair.className="pair";
+      pair.appendChild(safeCell("b",String(r.field??"")+" · "+String(r.status??"")));
+      pair.appendChild(safeCell("span",String(r.left_url??"")+" ↔ "+String(r.right_url??"")));
+      el.appendChild(pair);
+
+      el.appendChild(safeCell("div",fmtWei(r.amount,4),"bounty mono"));
+      el.appendChild(safeCell("div",live?timeLeft(r.deadline):String(r.status??""),"finder mono"));
+
+      const details=document.createElement("details");
+      details.className="watchdetails";
+      const summary=safeCell("summary","All on-chain fields");
+      summary.addEventListener("click",e=>e.stopPropagation());
+      details.appendChild(summary);
+
+      const dl=document.createElement("dl");
+      addDetail(dl,"id",r.id);
+      addDetail(dl,"funder",r.funder);
+      addDetail(dl,"finder",r.finder);
+      addDetail(dl,"left_url",r.left_url,true);
+      addDetail(dl,"right_url",r.right_url,true);
+      addDetail(dl,"field",r.field);
+      addDetail(dl,"amount",r.amount);
+      addDetail(dl,"opened_at",r.opened_at);
+      addDetail(dl,"deadline",r.deadline);
+      addDetail(dl,"left_value",r.left_value);
+      addDetail(dl,"right_value",r.right_value);
+      addDetail(dl,"status",r.status);
+      addDetail(dl,"note",r.note);
+      details.appendChild(dl);
+      details.addEventListener("click",e=>e.stopPropagation());
+      el.appendChild(details);
 
       el.onclick=async()=>{
         await loadId(r.id);
         const signal=document.querySelector(".signal");
         if(signal){
-          window.scrollTo({
-            top:signal.getBoundingClientRect().top+scrollY-24,
-            behavior:"smooth"
-          });
+          window.scrollTo({top:signal.getBoundingClientRect().top+scrollY-24,behavior:"smooth"});
         }
       };
-
       box.appendChild(el);
     });
   }
 
   const totalPages=Math.max(1,Math.ceil(totalWatchCount/WATCH_PAGE_SIZE));
-
-  $("#watchPageInfo").textContent=
-    `Page ${huntPage+1} of ${totalPages} · ${totalWatchCount} Watches`;
-
+  $("#watchPageInfo").textContent=`Page ${huntPage+1} of ${totalPages} · ${totalWatchCount} Watches`;
   $("#prevWatches").disabled=huntPage<=0;
   $("#nextWatches").disabled=(huntPage+1)>=totalPages;
 }
 
 async function loadHuntPage(page=0){
   const box=$("#huntList");
-  box.innerHTML='<div class="mono">Loading Watches…</div>';
+  const loading=safeCell("div","Loading Watches…","mono");
+  box.replaceChildren(loading);
 
   try{
     const n=await nextWatch();
@@ -574,7 +638,7 @@ async function loadHuntPage(page=0){
     renderHunt();
 
   }catch(e){
-    box.innerHTML='<div class="mono">Could not load Watches.</div>';
+    box.replaceChildren(safeCell("div","Could not load Watches.","mono"));
     toast(e.message||String(e),true);
   }
 }
@@ -659,14 +723,33 @@ $("#recheck").onclick=async()=>{
   const before=current?{...current}:null;
   try{
     if(!before)throw new Error("Load a watch first.");
+    if(!account)throw new Error("Connect a wallet first.");
 
-    await submitWrite("recheck",[String(before.id)]);
+    const salt=crypto.randomUUID
+      ? crypto.randomUUID().replaceAll("-","")
+      : Array.from(crypto.getRandomValues(new Uint8Array(24))).map(x=>x.toString(16).padStart(2,"0")).join("");
+    const digest=await claimDigest(before.id,account,salt);
+
+    await submitWrite("commit_split",[String(before.id),digest]);
+    setTxState("● Securing finder reward");
+
+    const committed=await waitForSplitCommitment(before.id,account,digest);
+    if(!committed)throw new Error("Split commitment was submitted but did not reach accepted state in time.");
+
+    const readyAt=(Number(committed.committed_at)||0)+30;
+    while(Math.floor(Date.now()/1000)<readyAt){
+      const left=Math.max(1,readyAt-Math.floor(Date.now()/1000));
+      setTxState("● Claim secured · reveal in "+left+"s");
+      await sleep(Math.min(1000,left*1000));
+    }
+
+    await submitWrite("recheck",[String(before.id),account,salt]);
     setTxState("● Confirming");
 
     const result=await waitForWatchState(before.id,before);
     if(result.rec?.id)renderWatch(result.rec);
 
-    await loadHunt();
+    await loadHuntPage(huntPage);
     await updateBalance();
 
     if(result.changed){
@@ -680,7 +763,7 @@ $("#recheck").onclick=async()=>{
           delete signal.dataset.demoHidden;
           signal.scrollIntoView({behavior:"smooth",block:"start"});
         }
-        toast("Signal found. Finder reward triggered.");
+        toast("Signal found. Finder reward paid to the committed recipient.");
       }else{
         toast("Watch updated.");
       }
@@ -732,7 +815,7 @@ $("#refund").onclick=async()=>{
   }
 };
 $("#loadWatch").onclick=()=>loadId($("#watchId").value.trim());
-$("#reloadHunt").onclick=loadHunt;
+$("#reloadHunt").onclick=()=>loadHuntPage(huntPage);
 
 
 async function updateBalance(){
