@@ -38,8 +38,8 @@ Without GenLayer, SplitSignal would need a centralized oracle or trusted backend
 2. Two public sources are selected.
 3. The sources must initially agree.
 4. A GEN bounty becomes active.
-5. Anyone can recheck the Watch while it is active.
-6. GenLayer reads both sources again.
+5. A finder commits a recipient-bound split claim while the Watch is active.
+6. After a short anti-front-run delay, the finder reveals the claim and GenLayer reads both sources again.
 7. If they still agree, the Watch remains `OPEN`.
 8. If they diverge, the Watch becomes `SPLIT`.
 9. The finder receives 95% of the bounty.
@@ -182,11 +182,11 @@ Reads both sources again.
 If the observations diverge while the Watch is still active:
 
 - status becomes `SPLIT`
-- finder becomes the caller
-- 95% of the bounty goes to the finder
+- finder becomes the payout recipient bound into the prior commitment
+- 95% of the bounty goes to that committed recipient
 - 5% goes to the protocol
 
-Settlement happens as part of the successful recheck flow.
+Settlement happens as part of the successful reveal/recheck flow. A copied reveal cannot redirect the reward because the commitment is keyed to the reporter and binds the payout recipient.
 
 ### `refund`
 
@@ -202,7 +202,7 @@ The frontend tracks the transaction lifecycle from wallet approval to confirmed 
 
 The basic flow is:
 
-`Waiting for wallet → Submitted → Confirming → Confirmed`
+`Commit claim → Accepted commitment → Anti-front-run delay → Reveal/recheck → Confirmed`
 
 After confirmation, the frontend reloads the accepted Watch state instead of assuming the result locally.
 
