@@ -35,3 +35,24 @@ jobs:
 
       - name: Run front-run and payout binding regression
         run: python -m pytest -q tests/test_front_run_regression.py
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Diagnose failed Studionet commit transaction
+        run: |
+          npm install --no-save genlayer-js@0.18.0
+          node --input-type=module <<'NODE'
+          import { createClient } from "genlayer-js";
+          import { studionet } from "genlayer-js/chains";
+
+          const hash = "0x9bf97a41710d72bfac6ebc5bfccd9b3d2f70f18a85cb82da00a1338689dd4615";
+          const client = createClient({
+            chain: studionet,
+            endpoint: "https://studio.genlayer.com/api"
+          });
+
+          const tx = await client.getTransaction({ hash });
+          console.log(JSON.stringify(tx, null, 2));
+          NODE
