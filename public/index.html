@@ -298,7 +298,9 @@ function transactionFailure(receiptData){
       if(leader?.error)return String(leader.error);
       const result=String(leader?.execution_result||"");
       if(result && !/SUCCESS|RETURN|AGREE/i.test(result)){
-        return "Leader execution result: "+result;
+        const stderr=String(leader?.genvm_result?.stderr||"").trim();
+        const detail=stderr?stderr.split("\n").filter(Boolean).at(-1):"";
+        return "Leader execution result: "+result+(detail?" · "+detail:"");
       }
       if(result)return "";
     }
