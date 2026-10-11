@@ -35,27 +35,3 @@ jobs:
 
       - name: Run front-run and payout binding regression
         run: python -m pytest -q tests/test_front_run_regression.py
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
-      - name: Diagnose failed Studionet commit transaction
-        run: |
-          node --input-type=module <<'NODE'
-          const endpoint = "https://studio.genlayer.com/api";
-          const hash = "0x9bf97a41710d72bfac6ebc5bfccd9b3d2f70f18a85cb82da00a1338689dd4615";
-
-          async function rpc(method, params) {
-            const response = await fetch(endpoint, {
-              method: "POST",
-              headers: { "content-type": "application/json" },
-              body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params })
-            });
-            console.log("\n=== "+method+" HTTP "+response.status+" ===");
-            console.log(await response.text());
-          }
-
-          await rpc("eth_getTransactionByHash", [hash]);
-          await rpc("gen_dbg_traceTransaction", [{ txID: hash, round: 0 }]);
-          NODE
