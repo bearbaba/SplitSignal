@@ -174,7 +174,11 @@ class SplitSignal(gl.Contract):
             raise Exception("not open")
         if self._now() >= int(rec.deadline):
             raise Exception("window closed")
-        if payout_recipient == ZERO:
+
+        # The pinned legacy runner decodes public Address arguments as strings.
+        # Normalize at the contract boundary before storing or transferring.
+        recipient = Address(payout_recipient)
+        if recipient == ZERO:
             raise Exception("invalid payout recipient")
         if not salt:
             raise Exception("salt required")
@@ -183,7 +187,7 @@ class SplitSignal(gl.Contract):
         if commit_key not in self.split_commitments:
             raise Exception("split commitment required")
 
-        expected = self._claim_digest(watch_id, payout_recipient, salt)
+        expected = self._claim_digest(watch_id, recipient, salt)
         if self.split_commitments[commit_key] != expected:
             raise Exception("split commitment mismatch")
 
@@ -210,14 +214,14 @@ class SplitSignal(gl.Contract):
         gross = int(rec.amount)
         fee = gross * FEE_BPS // 10000
         rec.status = "SPLIT"
-        rec.finder = payout_recipient
+        rec.finder = recipient
         rec.note = "sources diverged; payout bound to committed recipient"
         self.watches[watch_id] = rec
 
         self.split_commitments[commit_key] = ""
         self.split_commit_times[commit_key] = u32(0)
 
-        self._pay(payout_recipient, gross - fee)
+        self._pay(recipient, gross - fee)
         self._pay(self.fee_to, fee)
 
     @gl.public.write
