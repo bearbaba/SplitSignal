@@ -13,12 +13,12 @@ Anyone can recheck the Watch while it is active. If GenLayer verifies that the t
 - App: https://splitsignalv2.vercel.app/
 - Demo video: https://youtu.be/Rzw-AcIbncc
 - GitHub: https://github.com/bearbaba/SplitSignal
-- Explorer: https://explorer-studio.genlayer.com/address/0x68d058A66f486adeeF845785540f9056bc9E9E87
-- Studio: https://studio.genlayer.com/?import-contract=0x68d058A66f486adeeF845785540f9056bc9E9E87
+- Explorer: https://explorer-studio.genlayer.com/address/0xFf31b09a9825f8674779a81EEE8509e8e0e39047
+- Studio: https://studio.genlayer.com/?import-contract=0xFf31b09a9825f8674779a81EEE8509e8e0e39047
 
 ## Intelligent Contract
 
-`0x68d058A66f486adeeF845785540f9056bc9E9E87`
+`0xFf31b09a9825f8674779a81EEE8509e8e0e39047`
 
 Deployed on GenLayer Studionet.
 
@@ -52,9 +52,9 @@ The selected duration is how long the bounty stays open.
 
 It is **not** a waiting period.
 
-A Watch can be rechecked immediately after creation or at any later point before expiry.
+A finder can commit a split claim immediately after creation or at any later point before expiry. The reveal/recheck is accepted only after the short anti-front-run commitment delay.
 
-For example, if a Watch is active for 24 hours and Source B changes after only two minutes, anyone can recheck it immediately. If GenLayer verifies that the two sources now disagree, the Watch can become `SPLIT` right away.
+For example, if a Watch is active for 24 hours and Source B changes after only two minutes, a finder can secure the claim immediately, wait through the commitment delay, then reveal/recheck. If GenLayer verifies that the two sources now disagree, the Watch becomes `SPLIT`.
 
 The active duration simply defines how long the bounty remains available before expiry.
 
@@ -76,11 +76,12 @@ The live app includes a guided demo flow.
 3. Two public demo sources are created with matching values.
 4. Create the Watch.
 5. Click **Change Source B**.
-6. Recheck the Watch.
-7. GenLayer reads both public sources again.
-8. The divergence is verified.
-9. The Watch becomes `SPLIT`.
-10. The finder reward is triggered.
+6. Click **Recheck and claim** to submit the recipient-bound split commitment.
+7. After the anti-front-run delay, approve the reveal/recheck transaction.
+8. GenLayer reads both public sources again.
+9. The divergence is verified.
+10. The Watch becomes `SPLIT`.
+11. The committed payout recipient receives the finder reward.
 
 The demo sources are public so GenLayer validators can independently inspect the same content.
 
@@ -255,14 +256,16 @@ Those are scaling improvements. The core protocol flow already works end to end.
 - Live app: https://splitsignalv2.vercel.app/
 - Demo video: https://youtu.be/Rzw-AcIbncc
 - GitHub: https://github.com/bearbaba/SplitSignal
-- Contract Explorer: https://explorer-studio.genlayer.com/address/0x68d058A66f486adeeF845785540f9056bc9E9E87
-- Studio import: https://studio.genlayer.com/?import-contract=0x68d058A66f486adeeF845785540f9056bc9E9E87
+- Contract Explorer: https://explorer-studio.genlayer.com/address/0xFf31b09a9825f8674779a81EEE8509e8e0e39047
+- Studio import: https://studio.genlayer.com/?import-contract=0xFf31b09a9825f8674779a81EEE8509e8e0e39047
 
 ## Status
 
-SplitSignal is live on GenLayer Studionet and the end-to-end flow has been tested successfully:
+The security-hardened SplitSignal contract is deployed on GenLayer Studionet. Repository security and browser regressions pass for the recipient-bound commit/reveal flow.
 
-`Create Watch → Sources Match → Change Source B → Recheck → SPLIT → Finder Reward`
+Final live end-to-end verification against this deployment is the remaining release step:
+
+`Create Watch → Sources Match → Change Source B → Commit claim → Reveal/recheck → SPLIT → Finder Reward`
 
 ---
 
