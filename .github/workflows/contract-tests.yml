@@ -1,0 +1,37 @@
+name: Contract direct tests
+
+on:
+  pull_request:
+    paths:
+      - "contracts/**"
+      - "tests/test_splitsignal.py"
+      - "requirements.txt"
+      - ".github/workflows/contract-tests.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "contracts/**"
+      - "tests/test_splitsignal.py"
+      - "requirements.txt"
+      - ".github/workflows/contract-tests.yml"
+
+jobs:
+  direct-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install GenLayer test suite
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Run SplitSignal direct tests
+        run: python -m pytest -q tests/test_splitsignal.py
